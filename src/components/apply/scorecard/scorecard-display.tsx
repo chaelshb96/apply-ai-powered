@@ -164,19 +164,31 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
 
         <aside className="flex flex-col gap-6 desktop:sticky desktop:top-24">
           <section className="rounded-2xl border border-accent-line/50 bg-white p-5 tablet:p-7">
-            <span className="text-eyebrow text-text-grey">What changes next</span>
-            <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">From today to your next level</h3>
-            <div className="mt-7 grid gap-3 desktop:grid-cols-2 desktop:gap-2">
-              <div className="rounded-xl bg-neutral-50 p-4 desktop:rounded-r-none">
-                <span className="text-eyebrow text-text-grey">Before</span>
-                <p className="mt-2 text-sm leading-relaxed text-text-section-desc">{primary.before}</p>
-              </div>
-              <div className="rounded-xl bg-neutral-950 p-4 text-white desktop:rounded-l-none desktop:-ml-3">
-                <span className="text-eyebrow text-white/55">After</span>
-                <p className="mt-2 text-sm leading-relaxed text-white/80">{primary.after}</p>
-              </div>
+            <span className="text-eyebrow text-text-grey">What changes when you start</span>
+            <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">Before → After</h3>
+            <div className="mt-5 overflow-hidden rounded-xl border border-accent-line/30">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-accent-line/30 bg-neutral-50">
+                    <th className="px-4 py-3 font-semibold text-text-dark">Before</th>
+                    <th className="w-10 px-0 py-3" aria-hidden />
+                    <th className="px-4 py-3 font-semibold text-text-dark">After</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-accent-line/20">
+                  {primary.comparisons.map((row, i) => (
+                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-neutral-50/50"}>
+                      <td className="px-4 py-3 text-text-grey">{row.before}</td>
+                      <td className="px-0 py-3 text-center text-accent-blue">
+                        <ArrowRight className="mx-auto size-3.5" />
+                      </td>
+                      <td className="px-4 py-3 font-medium text-text-dark">{row.after}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="mt-7 border-t border-accent-line/40 pt-5">
+            <div className="mt-4 border-t border-accent-line/40 pt-4">
               <p className="text-sm leading-relaxed text-text-grey">
                 Your second-best fit is <strong className="font-semibold text-text-dark">{result.secondary.label}</strong>, a strong follow-on once you have momentum.
               </p>

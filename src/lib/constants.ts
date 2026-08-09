@@ -6,6 +6,11 @@ export type ServiceKey =
   | "crm"
   | "automations";
 
+export interface Comparison {
+  before: string;
+  after: string;
+}
+
 export interface Service {
   key: ServiceKey;
   label: string;
@@ -17,6 +22,7 @@ export interface Service {
   category: "programme" | "service";
   before: string;
   after: string;
+  comparisons: Comparison[];
 }
 
 export const SERVICES: Record<ServiceKey, Service> = {
@@ -32,6 +38,14 @@ export const SERVICES: Record<ServiceKey, Service> = {
     category: "programme",
     before: "AI feels fragmented and difficult to apply consistently.",
     after: "Clear, personalised AI workflows you can use with confidence.",
+    comparisons: [
+      { before: "Unclear AI strategy", after: "Personalised AI roadmap" },
+      { before: "Learning alone with YouTube", after: "Weekly expert 1:1 sessions" },
+      { before: "Can't measure AI impact", after: "Trackable skill progression" },
+      { before: "Ad-hoc AI usage", after: "Consistent AI workflows" },
+      { before: "Guesswork with tools", after: "Proven tool stack & methods" },
+      { before: "No accountability", after: "Dedicated mentor & peer group" },
+    ],
   },
   claude: {
     key: "claude",
@@ -45,6 +59,14 @@ export const SERVICES: Record<ServiceKey, Service> = {
     category: "programme",
     before: "Low confidence with Claude and inconsistent prompting.",
     after: "Strong Claude prompting skills and repeatable AI workflows.",
+    comparisons: [
+      { before: "Basic Claude prompting", after: "Advanced prompt engineering" },
+      { before: "Trial-and-error approach", after: "Structured learning path" },
+      { before: "Working in isolation", after: "Cohort of 15+ peers" },
+      { before: "One-off AI experiments", after: "Repeatable AI processes" },
+      { before: "No integration know-how", after: "Claude-to-tools workflows" },
+      { before: "Guess if AI is suitable", after: "Know when & how to deploy AI" },
+    ],
   },
   website: {
     key: "website",
@@ -58,6 +80,14 @@ export const SERVICES: Record<ServiceKey, Service> = {
     category: "service",
     before: "A website that does not clearly communicate your value.",
     after: "A focused, high-performing website built to convert.",
+    comparisons: [
+      { before: "Slow page loads", after: "Sub-2 second load times" },
+      { before: "Not mobile-friendly", after: "Flawless on every device" },
+      { before: "Confusing navigation", after: "Clear, intuitive UX" },
+      { before: "Low conversion rates", after: "Optimised conversion paths" },
+      { before: "Hard to update content", after: "Easy self-service CMS" },
+      { before: "Poor SEO visibility", after: "First-page search rankings" },
+    ],
   },
   marketing: {
     key: "marketing",
@@ -71,6 +101,14 @@ export const SERVICES: Record<ServiceKey, Service> = {
     category: "service",
     before: "Marketing activity without a reliable growth system.",
     after: "A measurable marketing engine that attracts better leads.",
+    comparisons: [
+      { before: "Random social posting", after: "Strategic content calendar" },
+      { before: "Can't attribute results", after: "Full funnel analytics" },
+      { before: "Low-quality leads", after: "Qualified lead generation" },
+      { before: "No email automation", after: "Automated nurture sequences" },
+      { before: "Wasted ad spend", after: "ROI-positive campaigns" },
+      { before: "DIY trial and error", after: "Expert-led strategy sessions" },
+    ],
   },
   crm: {
     key: "crm",
@@ -84,6 +122,14 @@ export const SERVICES: Record<ServiceKey, Service> = {
     category: "service",
     before: "Manual follow-ups, scattered information, and missed opportunities.",
     after: "A clear pipeline with automated customer journeys and follow-ups.",
+    comparisons: [
+      { before: "Leads fall through cracks", after: "Automated pipeline tracking" },
+      { before: "Data spread across tools", after: "Centralised customer view" },
+      { before: "Manual follow-ups", after: "Triggered email & SMS flows" },
+      { before: "No deal visibility", after: "Real-time pipeline dashboard" },
+      { before: "Inconsistent sales process", after: "Standardised playbook" },
+      { before: "Guessing customer needs", after: "Data-driven insights" },
+    ],
   },
   automations: {
     key: "automations",
@@ -97,6 +143,14 @@ export const SERVICES: Record<ServiceKey, Service> = {
     category: "service",
     before: "Hours lost to repetitive manual work every week.",
     after: "Connected AI automations that remove busywork from your team.",
+    comparisons: [
+      { before: "Manual data entry", after: "Auto-synced across tools" },
+      { before: "Emails typed one by one", after: "AI-personalised at scale" },
+      { before: "Reporting takes hours", after: "Instant dashboards" },
+      { before: "Repetitive admin tasks", after: "Fully automated workflows" },
+      { before: "Siloed business tools", after: "Connected tool ecosystem" },
+      { before: "Reactive problem-solving", after: "Proactive AI alerts" },
+    ],
   },
 };
 
