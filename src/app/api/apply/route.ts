@@ -49,7 +49,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Failed to save your results." }, { status: 500 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3002";
+    const protocol = request.headers.get("x-forwarded-proto") ?? "http";
+    const host = request.headers.get("host") ?? "localhost:3002";
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? `${protocol}://${host}`;
 
     try {
       await resend.emails.send({
