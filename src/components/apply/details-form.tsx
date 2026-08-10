@@ -19,7 +19,6 @@ export function DetailsForm({ onBack, onSubmit }: DetailsFormProps) {
   return (
     <div className="flex flex-col">
       <QuestionCard
-        questionNumber={0}
         title="Almost done — who are you?"
         subtitle="We'll personalise your results and send a copy to your inbox."
       >

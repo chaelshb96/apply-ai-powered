@@ -3,7 +3,6 @@
 import { ReactNode } from "react";
 
 export interface QuestionCardProps {
-  questionNumber?: number;
   title: string;
   subtitle?: string;
   children: ReactNode;
@@ -12,7 +11,6 @@ export interface QuestionCardProps {
 }
 
 export function QuestionCard({
-  questionNumber,
   title,
   subtitle,
   children,
@@ -26,12 +24,6 @@ export function QuestionCard({
           {phaseLabel}
         </span>
       )}
-      {questionNumber !== undefined && questionNumber > 0 && (
-        <span className="text-eyebrow mb-3 inline-block text-text-grey">
-          Question {questionNumber}
-        </span>
-      )}
-      {phaseLabel && !questionNumber && <div className="mb-3" />}
       <h2 className="text-[clamp(26px,3.5vw,36px)] font-semibold leading-[1.15] tracking-[-0.015em]">
         {title}
       </h2>

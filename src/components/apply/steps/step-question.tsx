@@ -44,7 +44,6 @@ export function StepQuestion({ questionIndex, value, onValueChange }: StepQuesti
 
   return (
     <QuestionCard
-      questionNumber={q.id}
       title={q.question}
       subtitle={q.subtitle}
       phaseLabel={isFirstInPhase ? PHASE_LABELS[q.category] : undefined}
