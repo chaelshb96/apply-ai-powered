@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme {
   --breakpoint-mobile: 390px;
   --breakpoint-tablet: 810px;
