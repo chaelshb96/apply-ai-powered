@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowRight, ArrowUp, Copy, Check, RefreshCw } from "lucide-react";
+import { ArrowRight, Copy, Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PROGRAMS, SERVICES } from "@/lib/constants";
 import type { ScorecardResult } from "@/lib/score-engine";
@@ -35,7 +35,6 @@ function ProgramCard({ label, description, href, icon }: (typeof PROGRAMS)[numbe
 }
 
 export function ScorecardDisplay({ result, userName, shareToken, readonly = false, onReset }: ScorecardDisplayProps) {
-  const [showServices, setShowServices] = useState(false);
   const [copied, setCopied] = useState(false);
   const primary = SERVICES[result.primary.key];
   const otherPrograms = PROGRAMS.filter((p) => p.key !== result.primary.key);
@@ -103,11 +102,8 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
       <section>
         <span className="text-eyebrow text-text-grey">Recommended for you</span>
         <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">
-          Programmes & services to level up
+          Your top programmes
         </h3>
-        <p className="mt-1 text-text-grey text-body">
-          Based on your AI skills and goals, here&apos;s what we recommend.
-        </p>
 
         <div className="mt-6 grid gap-4 tablet:grid-cols-2">
           <div className="animate-score-fade rounded-2xl border border-neutral-800 bg-neutral-950 p-6 text-white tablet:p-7">
@@ -130,55 +126,76 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
             </Button>
           </div>
 
-          <div className="flex flex-col gap-3">
-            {otherPrograms.slice(0, 2).map((program) => (
-              <ProgramCard
-                key={program.key}
-                label={program.label}
-                description={program.description}
-                href={program.href}
-                icon={program.icon}
-              />
-            ))}
-            <div className="animate-score-fade rounded-xl border border-accent-line/40 bg-white p-4 dark:border-white/10 dark:bg-neutral-900">
-              <p className="text-sm text-text-grey">
-                <strong className="font-semibold text-text-dark">{result.secondary.label}</strong> is your second-best match.
-              </p>
+          <div className="animate-score-fade rounded-2xl border border-accent-line/40 bg-white p-6 tablet:p-7 dark:border-white/10 dark:bg-neutral-900">
+            <div className="flex items-center gap-2 text-sm text-text-grey">
+              <span aria-hidden>{SERVICES.mentoring.icon}</span>
+              <span>Programme</span>
             </div>
+            <h4 className="mt-3 text-[24px] font-semibold tracking-tight text-text-dark">
+              1:1 Mentoring
+            </h4>
+            <p className="mt-3 text-base leading-relaxed text-text-section-desc">
+              Personalised guidance to help you and your team adopt AI effectively. Weekly sessions tailored to your pace and goals.
+            </p>
+            <Button variant="secondary" size="default" className="mt-6" asChild>
+              <a href={SERVICES.mentoring.ctaHref} target="_blank" rel="noopener noreferrer">
+                Book a Mentoring Call
+                <ArrowRight className="size-4" />
+              </a>
+            </Button>
           </div>
+        </div>
+
+        <p className="mt-6 text-eyebrow text-text-grey">Other programmes</p>
+        <div className="mt-3 grid gap-3 tablet:grid-cols-2">
+          {otherPrograms.map((program) => (
+            <ProgramCard
+              key={program.key}
+              label={program.label}
+              description={program.description}
+              href={program.href}
+              icon={program.icon}
+            />
+          ))}
         </div>
       </section>
 
-      {/* ── SERVICES ── */}
+      {/* ── AGENCY SERVICES ── */}
       <section>
-        <button
-          type="button"
-          onClick={() => setShowServices((v) => !v)}
-          className="flex w-full items-center justify-between rounded-xl border border-accent-line/40 bg-white p-5 text-left transition-colors hover:bg-neutral-50 dark:border-white/10 dark:bg-neutral-900 dark:hover:bg-neutral-800"
-          aria-expanded={showServices}
-        >
-          <span>
-            <span className="text-eyebrow block text-text-grey">Other services</span>
-            <span className="mt-1 block text-lg font-semibold tracking-tight">Services for your next move</span>
-          </span>
-          {showServices ? <ArrowUp className="size-5 text-text-grey" /> : <ArrowDown className="size-5 text-text-grey" />}
-        </button>
-        {showServices && (
-              <div className="mt-3 flex flex-col gap-3 rounded-xl border border-accent-line/40 bg-white p-5 tablet:p-6 dark:border-white/10 dark:bg-neutral-900">
-            <p className="text-sm leading-relaxed text-text-grey">Your answers create a fit across our other services.</p>
-            {result.allScores.map((s, i) => (
-              <div key={s.key} className="animate-score-fade" style={{ animationDelay: `${i * 70}ms` }}>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-text-dark">{s.label}</span>
-                  <span className="text-xs font-semibold tabular-nums text-text-grey">{s.score}%</span>
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100 dark:bg-white/10">
-                  <div className="h-full rounded-full bg-accent-blue animate-score-bar" style={{ width: `${s.score}%`, animationDelay: `${i * 70 + 150}ms` }} />
-                </div>
+        <span className="text-eyebrow text-text-grey">Our agency</span>
+        <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">
+          We build for your company or personal project
+        </h3>
+        <p className="mt-1 text-text-grey text-body">
+          From websites and marketing to CRM and AI automations — we handle it so you can focus on what matters.
+        </p>
+
+        <div className="mt-6 grid gap-3 tablet:grid-cols-2">
+          {result.allScores.map((s, i) => (
+            <div
+              key={s.key}
+              className="animate-score-fade flex flex-col rounded-xl border border-accent-line/40 bg-white p-5 dark:border-white/10 dark:bg-neutral-900"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div className="flex items-center gap-2">
+                <span aria-hidden>{SERVICES[s.key].icon}</span>
+                <span className="text-sm font-semibold text-text-dark">{s.label}</span>
               </div>
-            ))}
-          </div>
-        )}
+              <p className="mt-2 min-h-[2.5rem] text-sm leading-relaxed text-text-grey">
+                {SERVICES[s.key].description}
+              </p>
+              <a
+                href={SERVICES[s.key].ctaHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-text-dark underline-offset-4 transition-colors hover:text-neutral-600 hover:underline"
+              >
+                {SERVICES[s.key].ctaLabel}
+                <ArrowRight className="size-3.5" />
+              </a>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* ── BEFORE → AFTER TABLE ── */}
