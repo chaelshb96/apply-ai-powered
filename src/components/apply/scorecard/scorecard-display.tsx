@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowRight, ArrowUp, Copy, RefreshCw, Check } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, Copy, Check, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PROGRAMMES, SERVICES } from "@/lib/constants";
+import { PROGRAMS, SERVICES } from "@/lib/constants";
 import type { ScorecardResult } from "@/lib/score-engine";
+import { RadarChart } from "./radar-chart";
+import { DomainBreakdown } from "./domain-breakdown";
 
 export interface ScorecardDisplayProps {
   result: ScorecardResult;
@@ -14,36 +16,7 @@ export interface ScorecardDisplayProps {
   onReset?: () => void;
 }
 
-function MatchRing({ score }: { score: number }) {
-  const circumference = 2 * Math.PI * 43;
-  const offset = circumference - (score / 100) * circumference;
-
-  return (
-    <div className="relative flex size-28 shrink-0 items-center justify-center tablet:size-32">
-      <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100" aria-hidden>
-        <circle cx="50" cy="50" r="43" fill="none" stroke="#e8ebee" strokeWidth="5" />
-        <circle
-          cx="50"
-          cy="50"
-          r="43"
-          fill="none"
-          stroke="#2d2d2d"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className="animate-score-bar"
-        />
-      </svg>
-      <div className="relative flex flex-col items-center">
-        <strong className="text-3xl leading-none tracking-tight">{score}%</strong>
-        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-grey">match</span>
-      </div>
-    </div>
-  );
-}
-
-function OtherProgrammeCard({ label, description, href, icon }: (typeof PROGRAMMES)[number]) {
+function ProgramCard({ label, description, href, icon }: (typeof PROGRAMS)[number]) {
   return (
     <a
       href={href}
@@ -52,20 +25,25 @@ function OtherProgrammeCard({ label, description, href, icon }: (typeof PROGRAMM
       className="group flex items-start gap-3 rounded-xl border border-accent-line/40 bg-white p-4 transition-colors hover:border-accent-blue/60 hover:bg-neutral-50"
     >
       <span className="text-xl" aria-hidden>{icon}</span>
-      <span className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1">
         <span className="block text-sm font-semibold text-text-dark">{label}</span>
         <span className="mt-1 block text-xs leading-relaxed text-text-grey">{description}</span>
-      </span>
+      </div>
       <ArrowRight className="mt-0.5 size-4 shrink-0 text-text-grey transition-transform group-hover:translate-x-0.5" />
     </a>
   );
 }
 
 export function ScorecardDisplay({ result, userName, shareToken, readonly = false, onReset }: ScorecardDisplayProps) {
-  const [showServices, setShowServices] = useState(true);
+  const [showServices, setShowServices] = useState(false);
   const [copied, setCopied] = useState(false);
   const primary = SERVICES[result.primary.key];
-  const otherProgrammes = PROGRAMMES.filter((programme) => programme.key !== result.primary.key);
+  const otherPrograms = PROGRAMS.filter((p) => p.key !== result.primary.key);
+
+  const radarData = result.domainScores.map((d) => ({
+    label: d.shortLabel,
+    score: d.score,
+  }));
 
   const handleCopyLink = () => {
     if (!shareToken) return;
@@ -77,151 +55,181 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="grid gap-8 desktop:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] desktop:items-start desktop:gap-10">
-        <div className="flex flex-col gap-8">
-          {userName && (
-            <p className="animate-score-fade text-xl font-medium tracking-tight text-text-dark tablet:text-2xl">
-              Nice one, {userName} — here&apos;s your match
-            </p>
-          )}
+    <div className="flex flex-col gap-10">
+      {userName && (
+        <p className="animate-score-fade text-2xl font-medium tracking-tight text-text-dark tablet:text-3xl">
+          Nice one, {userName} — here&apos;s your AI score
+        </p>
+      )}
 
-          <section className="animate-score-fade rounded-2xl border border-neutral-800 bg-neutral-950 p-6 text-white tablet:p-8">
-            <div className="flex items-start justify-between gap-5">
-              <div>
-                <span className="text-eyebrow text-white/55">01 · Your match</span>
-                <div className="mt-4 flex items-center gap-2 text-sm text-white/65">
-                  <span aria-hidden>{primary.icon}</span>
-                  <span>{primary.category === "programme" ? "Programme" : "Service"}</span>
-                </div>
-                <h2 className="mt-2 max-w-lg text-[28px] font-semibold leading-tight tracking-tight tablet:text-[38px]">
-                  {primary.label}
-                </h2>
-              </div>
-              <MatchRing score={result.primary.score} />
+      {/* ── HERO: score + tier + radar ── */}
+      <section className="grid gap-10 desktop:grid-cols-[1.1fr_0.9fr] desktop:items-start desktop:gap-16">
+        <div className="animate-score-fade">
+          <div className="flex flex-wrap items-baseline gap-3">
+            <span className="text-[clamp(100px,15vw,180px)] font-black leading-none tracking-[-0.04em] text-text-dark">
+              {result.overallScore}
+            </span>
+            <span className="text-[clamp(24px,4vw,40px)] font-semibold tracking-[-0.02em] text-text-grey">/100</span>
+          </div>
+          <div className="mt-2 flex items-center gap-3">
+            <span className="text-[clamp(20px,3vw,32px)] font-medium tracking-[-0.01em] text-text-grey">You&apos;re</span>
+            <span
+              className="inline-flex rounded-full px-4 py-1.5 text-sm font-bold uppercase tracking-wider text-white"
+              style={{ background: result.tierColor }}
+            >
+              {result.tierLabel}
+            </span>
+          </div>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-text-section-desc">
+            {result.overallCommentary}
+          </p>
+          <Button variant="primary" size="default" className="mt-7" asChild>
+            <a href={primary.ctaHref} target="_blank" rel="noopener noreferrer">
+              Level up with {primary.shortLabel}
+              <ArrowRight className="size-4" />
+            </a>
+          </Button>
+        </div>
+
+        <div className="animate-score-fade rounded-2xl border border-accent-line/40 bg-white p-6 tablet:p-8">
+          <RadarChart data={radarData} primaryColor={result.tierColor} />
+        </div>
+      </section>
+
+      {/* ── DOMAIN BREAKDOWN ── */}
+      <DomainBreakdown domains={result.domainScores} />
+
+      {/* ── RECOMMENDED PROGRAMMES ── */}
+      <section>
+        <span className="text-eyebrow text-text-grey">Recommended for you</span>
+        <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">
+          Programmes & services to level up
+        </h3>
+        <p className="mt-1 text-text-grey text-body">
+          Based on your AI skills and goals, here&apos;s what we recommend.
+        </p>
+
+        <div className="mt-6 grid gap-4 tablet:grid-cols-2">
+          <div className="animate-score-fade rounded-2xl border border-neutral-800 bg-neutral-950 p-6 text-white tablet:p-7">
+            <div className="flex items-center gap-2 text-sm text-white/65">
+              <span aria-hidden>{primary.icon}</span>
+              <span>{primary.category === "programme" ? "Programme" : "Service"}</span>
+              {result.primary.score >= 60 && (
+                <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-white/80">
+                  Top match
+                </span>
+              )}
             </div>
-            <p className="mt-7 max-w-xl text-base leading-relaxed text-white/70">{result.explanation}</p>
-            <Button variant="primary" size="default" className="mt-7 bg-white text-neutral-950 hover:bg-white/85" asChild>
+            <h4 className="mt-3 text-[24px] font-semibold tracking-tight">{primary.label}</h4>
+            <p className="mt-3 text-base leading-relaxed text-white/70">{result.explanation}</p>
+            <Button variant="primary" size="default" className="mt-6 bg-white text-neutral-950 hover:bg-white/85" asChild>
               <a href={primary.ctaHref} target="_blank" rel="noopener noreferrer">
                 {primary.ctaLabel}
                 <ArrowRight className="size-4" />
               </a>
             </Button>
-          </section>
+          </div>
 
-          <section>
-            <div className="mb-4 flex items-end justify-between gap-4">
-              <div>
-                <span className="text-eyebrow text-text-grey">02 · Explore more</span>
-                <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">Other programmes</h3>
-              </div>
-              <span className="hidden text-sm text-text-grey tablet:block">Not your top match, still worth exploring.</span>
+          <div className="flex flex-col gap-3">
+            {otherPrograms.slice(0, 2).map((program) => (
+              <ProgramCard
+                key={program.key}
+                label={program.label}
+                description={program.description}
+                href={program.href}
+                icon={program.icon}
+              />
+            ))}
+            <div className="animate-score-fade rounded-xl border border-accent-line/40 bg-white p-4">
+              <p className="text-sm text-text-grey">
+                <strong className="font-semibold text-text-dark">{result.secondary.label}</strong> is your second-best match.
+              </p>
             </div>
-            <div className="grid grid-cols-1 gap-3">
-              {otherProgrammes.map((programme) => (
-                <OtherProgrammeCard
-                  key={programme.key}
-                  label={programme.label}
-                  description={programme.description}
-                  href={programme.href}
-                  icon={programme.icon}
-                />
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <button
-              type="button"
-              onClick={() => setShowServices((visible) => !visible)}
-              className="flex w-full items-center justify-between rounded-xl border border-accent-line/40 bg-white p-5 text-left transition-colors hover:bg-neutral-50"
-              aria-expanded={showServices}
-            >
-              <span>
-                <span className="text-eyebrow block text-text-grey">03 · Other services</span>
-                <span className="mt-1 block text-lg font-semibold tracking-tight">Services for your next move</span>
-              </span>
-              {showServices ? <ArrowUp className="size-5 text-text-grey" /> : <ArrowDown className="size-5 text-text-grey" />}
-            </button>
-            {showServices && (
-              <div className="mt-3 flex flex-col gap-3 rounded-xl border border-accent-line/40 bg-white p-5 tablet:p-6">
-                <p className="text-sm leading-relaxed text-text-grey">Your answers create a fit across our other services.</p>
-                {result.allScores.map((score, index) => (
-                  <div key={score.key} className="animate-score-fade" style={{ animationDelay: `${index * 70}ms` }}>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-medium text-text-dark">{SERVICES[score.key].label}</span>
-                      <span className="text-xs font-semibold tabular-nums text-text-grey">{score.score}%</span>
-                    </div>
-                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100">
-                      <div className="h-full rounded-full bg-accent-blue animate-score-bar" style={{ width: `${score.score}%`, animationDelay: `${index * 70 + 150}ms` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          </div>
         </div>
+      </section>
 
-        <aside className="flex flex-col gap-6 desktop:sticky desktop:top-24">
-          <section className="rounded-2xl border border-accent-line/50 bg-white p-5 tablet:p-7">
-            <span className="text-eyebrow text-text-grey">What changes when you start</span>
-            <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">Before → After</h3>
-            <div className="mt-5 overflow-hidden rounded-xl border border-accent-line/30">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-accent-line/30 bg-neutral-50">
-                    <th className="px-4 py-3 font-semibold text-text-dark">Before</th>
-                    <th className="w-10 px-0 py-3" aria-hidden />
-                    <th className="px-4 py-3 font-semibold text-text-dark">After</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-accent-line/20">
-                  {primary.comparisons.map((row, i) => (
-                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-neutral-50/50"}>
-                      <td className="px-4 py-3 text-text-grey">{row.before}</td>
-                      <td className="px-0 py-3 text-center text-accent-blue">
-                        <ArrowRight className="mx-auto size-3.5" />
-                      </td>
-                      <td className="px-4 py-3 font-medium text-text-dark">{row.after}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 border-t border-accent-line/40 pt-4">
-              <p className="text-sm leading-relaxed text-text-grey">
-                Your second-best fit is <strong className="font-semibold text-text-dark">{result.secondary.label}</strong>, a strong follow-on once you have momentum.
-              </p>
-            </div>
-          </section>
+      {/* ── SERVICES ── */}
+      <section>
+        <button
+          type="button"
+          onClick={() => setShowServices((v) => !v)}
+          className="flex w-full items-center justify-between rounded-xl border border-accent-line/40 bg-white p-5 text-left transition-colors hover:bg-neutral-50"
+          aria-expanded={showServices}
+        >
+          <span>
+            <span className="text-eyebrow block text-text-grey">Other services</span>
+            <span className="mt-1 block text-lg font-semibold tracking-tight">Services for your next move</span>
+          </span>
+          {showServices ? <ArrowUp className="size-5 text-text-grey" /> : <ArrowDown className="size-5 text-text-grey" />}
+        </button>
+        {showServices && (
+          <div className="mt-3 flex flex-col gap-3 rounded-xl border border-accent-line/40 bg-white p-5 tablet:p-6">
+            <p className="text-sm leading-relaxed text-text-grey">Your answers create a fit across our other services.</p>
+            {result.allScores.map((s, i) => (
+              <div key={s.key} className="animate-score-fade" style={{ animationDelay: `${i * 70}ms` }}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-text-dark">{s.label}</span>
+                  <span className="text-xs font-semibold tabular-nums text-text-grey">{s.score}%</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100">
+                  <div className="h-full rounded-full bg-accent-blue animate-score-bar" style={{ width: `${s.score}%`, animationDelay: `${i * 70 + 150}ms` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
-          {shareToken && (
-            <section className="rounded-2xl border border-accent-line/50 bg-white p-5 tablet:p-7">
-              <span className="text-eyebrow text-text-grey">Share your result</span>
-              <p className="mt-2 text-sm leading-relaxed text-text-section-desc">
-                A copy of these results has been sent to your email. You can also share this link anytime.
-              </p>
-              <button
-                onClick={handleCopyLink}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-accent-line bg-white px-4 h-[36px] text-sm font-medium text-text-dark transition-colors hover:bg-neutral-50"
-              >
-                {copied ? (
-                  <>
-                    <Check className="size-3.5 text-emerald-600" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="size-3.5" />
-                    Copy share link
-                  </>
-                )}
-              </button>
-            </section>
-          )}
-        </aside>
-      </div>
+      {/* ── BEFORE → AFTER TABLE ── */}
+      <section>
+        <span className="text-eyebrow text-text-grey">What changes when you start</span>
+        <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">Before → After with {primary.shortLabel}</h3>
+        <div className="mt-5 overflow-hidden rounded-xl border border-accent-line/30">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-accent-line/30 bg-neutral-50">
+                <th className="px-4 py-3 font-semibold text-text-dark">Before</th>
+                <th className="w-10 px-0 py-3" aria-hidden />
+                <th className="px-4 py-3 font-semibold text-text-dark">After</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-accent-line/20">
+              {primary.comparisons.map((row, i) => (
+                <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-neutral-50/50"}>
+                  <td className="px-4 py-3 text-text-grey">{row.before}</td>
+                  <td className="px-0 py-3 text-center text-accent-blue">
+                    <ArrowRight className="mx-auto size-3.5" />
+                  </td>
+                  <td className="px-4 py-3 font-medium text-text-dark">{row.after}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
+      {/* ── SHARE ── */}
+      {shareToken && (
+        <section className="rounded-2xl border border-accent-line/50 bg-white p-5 tablet:p-7">
+          <span className="text-eyebrow text-text-grey">Share your result</span>
+          <p className="mt-2 text-sm leading-relaxed text-text-section-desc">
+            A copy has been sent to your email. Share this link anytime.
+          </p>
+          <button
+            onClick={handleCopyLink}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-accent-line bg-white px-4 h-[36px] text-sm font-medium text-text-dark transition-colors hover:bg-neutral-50"
+          >
+            {copied ? (
+              <><Check className="size-3.5 text-emerald-600" />Copied</>
+            ) : (
+              <><Copy className="size-3.5" />Copy share link</>
+            )}
+          </button>
+        </section>
+      )}
+
+      {/* ── RETAKE ── */}
       {!readonly && onReset && (
         <div className="flex flex-col items-center gap-3 border-t border-accent-line/40 pt-7 text-center">
           <p className="text-sm text-text-grey">Want to compare your answers again?</p>

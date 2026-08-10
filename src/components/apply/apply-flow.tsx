@@ -5,7 +5,7 @@ import { StepIndicator } from "./step-indicator";
 import { StepQuestion } from "./steps/step-question";
 import { Interstitial } from "./interstitial";
 import { DetailsForm } from "./details-form";
-import { ScorecardLoading } from "./scorecard/scorecard-loading";
+import { SkillsLoading } from "./skills-loading";
 import { ScorecardDisplay } from "./scorecard/scorecard-display";
 import { Button } from "@/components/ui/button";
 import { INTERSTITIALS, QUESTIONS } from "@/lib/constants";
@@ -156,9 +156,7 @@ export function ApplyFlow() {
   if (phase === "loading") {
     return (
       <div className="flex flex-col">
-        <div className="mt-4">
-          <ScorecardLoading />
-        </div>
+        <SkillsLoading />
       </div>
     );
   }
@@ -166,9 +164,6 @@ export function ApplyFlow() {
   if (phase === "result" && result) {
     return (
       <div className="flex flex-col">
-        <div className="flex items-center gap-2">
-          <span className="text-eyebrow text-text-grey">Your Results</span>
-        </div>
         <div className="mt-8 animate-score-fade">
           <ScorecardDisplay
             result={result}

@@ -3,13 +3,19 @@
 import { useEffect, useState } from "react";
 import { RadioGroup, type RadioGroupOption } from "@/components/ui/radio-group";
 import { QuestionCard } from "@/components/apply/question-card";
-import { QUESTIONS } from "@/lib/constants";
+import { QUESTIONS, type QuestionCategory } from "@/lib/constants";
 
 export interface StepQuestionProps {
   questionIndex: number;
   value: string;
   onValueChange: (value: string) => void;
 }
+
+const PHASE_LABELS: Record<QuestionCategory, string> = {
+  phase1: "Phase 1 · About you",
+  phase2: "Phase 2 · AI skill assessment",
+  phase3: "Phase 3 · Your goals",
+};
 
 export function StepQuestion({ questionIndex, value, onValueChange }: StepQuestionProps) {
   const q = QUESTIONS[questionIndex];
@@ -32,11 +38,16 @@ export function StepQuestion({ questionIndex, value, onValueChange }: StepQuesti
 
   if (!q) return null;
 
+  const isFirstInPhase =
+    questionIndex === 0 ||
+    QUESTIONS[questionIndex - 1]?.category !== q.category;
+
   return (
     <QuestionCard
-      questionNumber={questionIndex + 1}
+      questionNumber={q.id}
       title={q.question}
       subtitle={q.subtitle}
+      phaseLabel={isFirstInPhase ? PHASE_LABELS[q.category] : undefined}
     >
       {q.type === "radio" && (
         <RadioGroup
@@ -44,6 +55,7 @@ export function StepQuestion({ questionIndex, value, onValueChange }: StepQuesti
           value={value}
           onValueChange={onValueChange}
           name={`q-${q.id}`}
+          large
         />
       )}
       {q.type === "text" && (
@@ -53,7 +65,7 @@ export function StepQuestion({ questionIndex, value, onValueChange }: StepQuesti
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           autoComplete={q.inputType === "email" ? "email" : "name"}
-          className="w-full rounded-lg border border-accent-line/60 bg-white px-4 py-3 text-base text-text-dark outline-none transition-colors placeholder:text-text-grey focus:border-neutral-800 focus:ring-2 focus:ring-neutral-800/10"
+          className="w-full rounded-xl border border-accent-line/60 bg-white px-5 py-4 text-lg text-text-dark outline-none transition-colors placeholder:text-text-grey focus:border-neutral-800 focus:ring-2 focus:ring-neutral-800/10"
         />
       )}
     </QuestionCard>
