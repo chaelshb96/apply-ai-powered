@@ -34,7 +34,7 @@ export function DetailsForm({ onBack, onSubmit }: DetailsFormProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
-              className="w-full rounded-lg border border-accent-line/60 bg-white px-4 py-3 text-base text-text-dark outline-none transition-colors placeholder:text-text-grey focus:border-neutral-800 focus:ring-2 focus:ring-neutral-800/10"
+              className="w-full rounded-lg border border-accent-line/60 bg-white px-4 py-3 text-base text-text-dark outline-none transition-colors placeholder:text-text-grey focus:border-neutral-800 focus:ring-2 focus:ring-neutral-800/10 dark:border-white/10 dark:bg-neutral-900 dark:focus:border-white dark:focus:ring-white/10"
             />
           </div>
           <div>
@@ -48,7 +48,7 @@ export function DetailsForm({ onBack, onSubmit }: DetailsFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              className="w-full rounded-lg border border-accent-line/60 bg-white px-4 py-3 text-base text-text-dark outline-none transition-colors placeholder:text-text-grey focus:border-neutral-800 focus:ring-2 focus:ring-neutral-800/10"
+              className="w-full rounded-lg border border-accent-line/60 bg-white px-4 py-3 text-base text-text-dark outline-none transition-colors placeholder:text-text-grey focus:border-neutral-800 focus:ring-2 focus:ring-neutral-800/10 dark:border-white/10 dark:bg-neutral-900 dark:focus:border-white dark:focus:ring-white/10"
             />
           </div>
         </div>

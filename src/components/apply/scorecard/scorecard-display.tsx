@@ -22,7 +22,7 @@ function ProgramCard({ label, description, href, icon }: (typeof PROGRAMS)[numbe
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-start gap-3 rounded-xl border border-accent-line/40 bg-white p-4 transition-colors hover:border-accent-blue/60 hover:bg-neutral-50"
+      className="group flex items-start gap-3 rounded-xl border border-accent-line/40 bg-white p-4 transition-colors hover:border-accent-blue/60 hover:bg-neutral-50 dark:border-white/10 dark:bg-neutral-900 dark:hover:border-white/20 dark:hover:bg-neutral-800"
     >
       <span className="text-xl" aria-hidden>{icon}</span>
       <div className="min-w-0 flex-1">
@@ -91,7 +91,7 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
           </Button>
         </div>
 
-        <div className="animate-score-fade rounded-2xl border border-accent-line/40 bg-white p-6 tablet:p-8">
+        <div className="animate-score-fade rounded-2xl border border-accent-line/40 bg-white p-6 tablet:p-8 dark:border-white/10 dark:bg-neutral-900">
           <RadarChart data={radarData} primaryColor={result.tierColor} />
         </div>
       </section>
@@ -140,7 +140,7 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
                 icon={program.icon}
               />
             ))}
-            <div className="animate-score-fade rounded-xl border border-accent-line/40 bg-white p-4">
+            <div className="animate-score-fade rounded-xl border border-accent-line/40 bg-white p-4 dark:border-white/10 dark:bg-neutral-900">
               <p className="text-sm text-text-grey">
                 <strong className="font-semibold text-text-dark">{result.secondary.label}</strong> is your second-best match.
               </p>
@@ -154,7 +154,7 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
         <button
           type="button"
           onClick={() => setShowServices((v) => !v)}
-          className="flex w-full items-center justify-between rounded-xl border border-accent-line/40 bg-white p-5 text-left transition-colors hover:bg-neutral-50"
+          className="flex w-full items-center justify-between rounded-xl border border-accent-line/40 bg-white p-5 text-left transition-colors hover:bg-neutral-50 dark:border-white/10 dark:bg-neutral-900 dark:hover:bg-neutral-800"
           aria-expanded={showServices}
         >
           <span>
@@ -164,7 +164,7 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
           {showServices ? <ArrowUp className="size-5 text-text-grey" /> : <ArrowDown className="size-5 text-text-grey" />}
         </button>
         {showServices && (
-          <div className="mt-3 flex flex-col gap-3 rounded-xl border border-accent-line/40 bg-white p-5 tablet:p-6">
+              <div className="mt-3 flex flex-col gap-3 rounded-xl border border-accent-line/40 bg-white p-5 tablet:p-6 dark:border-white/10 dark:bg-neutral-900">
             <p className="text-sm leading-relaxed text-text-grey">Your answers create a fit across our other services.</p>
             {result.allScores.map((s, i) => (
               <div key={s.key} className="animate-score-fade" style={{ animationDelay: `${i * 70}ms` }}>
@@ -172,7 +172,7 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
                   <span className="text-sm font-medium text-text-dark">{s.label}</span>
                   <span className="text-xs font-semibold tabular-nums text-text-grey">{s.score}%</span>
                 </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100">
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100 dark:bg-white/10">
                   <div className="h-full rounded-full bg-accent-blue animate-score-bar" style={{ width: `${s.score}%`, animationDelay: `${i * 70 + 150}ms` }} />
                 </div>
               </div>
@@ -185,18 +185,18 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
       <section>
         <span className="text-eyebrow text-text-grey">What changes when you start</span>
         <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">Before → After with {primary.shortLabel}</h3>
-        <div className="mt-5 overflow-hidden rounded-xl border border-accent-line/30">
+        <div className="mt-5 overflow-hidden rounded-xl border border-accent-line/30 dark:border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-accent-line/30 bg-neutral-50">
+              <tr className="border-b border-accent-line/30 bg-neutral-50 dark:border-white/10 dark:bg-neutral-800">
                 <th className="px-4 py-3 font-semibold text-text-dark">Before</th>
                 <th className="w-10 px-0 py-3" aria-hidden />
                 <th className="px-4 py-3 font-semibold text-text-dark">After</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-accent-line/20">
+            <tbody className="divide-y divide-accent-line/20 dark:divide-white/5">
               {primary.comparisons.map((row, i) => (
-                <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-neutral-50/50"}>
+                <tr key={i} className={i % 2 === 0 ? "bg-white dark:bg-neutral-900" : "bg-neutral-50/50 dark:bg-neutral-850"}>
                   <td className="px-4 py-3 text-text-grey">{row.before}</td>
                   <td className="px-0 py-3 text-center text-accent-blue">
                     <ArrowRight className="mx-auto size-3.5" />
@@ -211,14 +211,14 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
 
       {/* ── SHARE ── */}
       {shareToken && (
-        <section className="rounded-2xl border border-accent-line/50 bg-white p-5 tablet:p-7">
+        <section className="rounded-2xl border border-accent-line/50 bg-white p-5 tablet:p-7 dark:border-white/10 dark:bg-neutral-900">
           <span className="text-eyebrow text-text-grey">Share your result</span>
           <p className="mt-2 text-sm leading-relaxed text-text-section-desc">
             A copy has been sent to your email. Share this link anytime.
           </p>
           <button
             onClick={handleCopyLink}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-accent-line bg-white px-4 h-[36px] text-sm font-medium text-text-dark transition-colors hover:bg-neutral-50"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-accent-line bg-white px-4 h-[36px] text-sm font-medium text-text-dark transition-colors hover:bg-neutral-50 dark:border-white/15 dark:bg-neutral-900 dark:hover:bg-neutral-800"
           >
             {copied ? (
               <><Check className="size-3.5 text-emerald-600" />Copied</>

@@ -19,7 +19,7 @@ export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
             key={i}
             className={cn(
               "h-1 flex-1 rounded-full transition-colors duration-300",
-              i < currentStep ? "bg-neutral-800" : "bg-accent-line/40",
+              i < currentStep ? "bg-neutral-800 dark:bg-white" : "bg-accent-line/40 dark:bg-white/15",
             )}
           />
         ))}

@@ -37,8 +37,8 @@ export function RadioGroup({
               "flex cursor-pointer items-start gap-4 rounded-xl border transition-all select-none",
               large ? "p-5 tablet:p-6" : "p-4",
               isSelected
-                ? "border-neutral-800 bg-neutral-50 ring-1 ring-neutral-800/20"
-                : "border-accent-line/40 bg-white hover:border-accent-line hover:bg-neutral-50/50",
+                ? "border-neutral-800 bg-neutral-50 ring-1 ring-neutral-800/20 dark:border-white dark:bg-neutral-800/60 dark:ring-white/10"
+                : "border-accent-line/40 bg-white hover:border-accent-line hover:bg-neutral-50/50 dark:border-white/10 dark:bg-neutral-900 dark:hover:border-white/20 dark:hover:bg-neutral-800/50",
             )}
           >
             <div
@@ -46,7 +46,7 @@ export function RadioGroup({
                 "mt-0.5 flex shrink-0 items-center justify-center rounded-full border transition-colors",
                 large ? "size-5" : "size-4",
               )}
-              style={{ borderColor: isSelected ? "#1a1a1a" : "#c8d0d8" }}
+              style={{ borderColor: isSelected ? "var(--text-dark)" : "var(--accent-line)" }}
             >
               {isSelected && (
                 <div className={cn(
