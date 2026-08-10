@@ -50,7 +50,7 @@ export function RadioGroup({
             >
               {isSelected && (
                 <div className={cn(
-                  "rounded-full bg-neutral-800",
+                  "rounded-full bg-neutral-800 dark:bg-white",
                   large ? "size-2.5" : "size-2",
                 )} />
               )}

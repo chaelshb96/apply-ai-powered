@@ -24,8 +24,7 @@ export function ApplyHeader() {
           width={140}
           height={24}
           priority
-          className="h-6 w-auto dark:invert"
-          style={{ filter: "brightness(0)" }}
+          className="h-6 w-auto brightness-0 dark:brightness-0 dark:invert"
         />
 
         <div className="flex items-center gap-2">
