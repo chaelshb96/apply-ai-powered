@@ -160,44 +160,6 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
         </div>
       </section>
 
-      {/* ── AGENCY SERVICES ── */}
-      <section>
-        <span className="text-eyebrow text-text-grey">Our agency</span>
-        <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">
-          We build for your company or personal project
-        </h3>
-        <p className="mt-1 text-text-grey text-body">
-          From websites and marketing to CRM and AI automations — we handle it so you can focus on what matters.
-        </p>
-
-        <div className="mt-6 grid gap-3 tablet:grid-cols-2">
-          {result.allScores.map((s, i) => (
-            <div
-              key={s.key}
-              className="animate-score-fade flex flex-col rounded-xl border border-accent-line/40 bg-white p-5 dark:border-white/10 dark:bg-neutral-900"
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              <div className="flex items-center gap-2">
-                <span aria-hidden>{SERVICES[s.key].icon}</span>
-                <span className="text-sm font-semibold text-text-dark">{s.label}</span>
-              </div>
-              <p className="mt-2 min-h-[2.5rem] text-sm leading-relaxed text-text-grey">
-                {SERVICES[s.key].description}
-              </p>
-              <a
-                href={SERVICES[s.key].ctaHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-text-dark underline-offset-4 transition-colors hover:text-neutral-600 hover:underline"
-              >
-                {SERVICES[s.key].ctaLabel}
-                <ArrowRight className="size-3.5" />
-              </a>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── BEFORE → AFTER TABLE ── */}
       <section>
         <span className="text-eyebrow text-text-grey">What changes when you start</span>
@@ -223,6 +185,44 @@ export function ScorecardDisplay({ result, userName, shareToken, readonly = fals
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* ── AGENCY SERVICES ── */}
+      <section>
+        <span className="text-eyebrow text-text-grey">Our agency</span>
+        <h3 className="mt-2 text-xl font-semibold tracking-tight tablet:text-2xl">
+          We build for your company or personal project
+        </h3>
+        <p className="mt-1 text-text-grey text-body">
+          From websites and marketing to CRM and AI automations — we handle it so you can focus on what matters.
+        </p>
+
+        <div className="mt-6 grid gap-3 tablet:grid-cols-2">
+          {result.allScores.filter((s) => s.key !== "mentoring" && s.key !== "claude").map((s, i) => (
+            <div
+              key={s.key}
+              className="animate-score-fade flex flex-col rounded-xl border border-accent-line/40 bg-white p-5 dark:border-white/10 dark:bg-neutral-900"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div className="flex items-center gap-2">
+                <span aria-hidden>{SERVICES[s.key].icon}</span>
+                <span className="text-sm font-semibold text-text-dark">{s.label}</span>
+              </div>
+              <p className="mt-2 min-h-[2.5rem] text-sm leading-relaxed text-text-grey">
+                {SERVICES[s.key].description}
+              </p>
+              <a
+                href={SERVICES[s.key].ctaHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-text-dark underline-offset-4 transition-colors hover:text-neutral-600 hover:underline"
+              >
+                {SERVICES[s.key].ctaLabel}
+                <ArrowRight className="size-3.5" />
+              </a>
+            </div>
+          ))}
         </div>
       </section>
 
