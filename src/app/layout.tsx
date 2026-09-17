@@ -7,11 +7,12 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
-  title: "Apply – AI Powered",
-  description: "Discover which AI Powered service is the best fit for you.",
+  title: "Your Game Plan | AI Powered",
+  description: "Twenty questions. A plan for where you actually are with AI, and what to do next.",
 };
 
 export default function RootLayout({
@@ -24,7 +25,7 @@ export default function RootLayout({
       <head>
         <ThemeScript />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-text-dark">{children}</body>
+      <body className="min-h-full flex flex-col text-text-dark">{children}</body>
     </html>
   );
 }

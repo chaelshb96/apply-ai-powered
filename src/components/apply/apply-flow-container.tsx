@@ -2,13 +2,15 @@
 
 import { ApplyHeader } from "@/components/layout/apply-header";
 import { ApplyFlow } from "@/components/apply/apply-flow";
+import { QUIZ_MAX_WIDTH_CLASS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 export function ApplyFlowContainer() {
   return (
     <>
       <ApplyHeader />
       <main className="flex flex-1 flex-col">
-        <div className="mx-auto w-full max-w-[720px] flex-1 px-5 py-10 tablet:px-[42px] tablet:py-14 desktop:max-w-[1080px] desktop:px-16 desktop:py-20 desktop-xl:px-[88px]">
+        <div className={cn("mx-auto w-full flex-1 px-5 py-8 tablet:px-8 tablet:py-10", QUIZ_MAX_WIDTH_CLASS)}>
           <ApplyFlow />
         </div>
       </main>

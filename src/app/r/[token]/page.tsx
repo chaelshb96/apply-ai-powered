@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { ApplyHeader } from "@/components/layout/apply-header";
-import { ScorecardDisplay } from "@/components/apply/scorecard/scorecard-display";
-import type { ScorecardResult } from "@/lib/score-engine";
+import { ResultDeck } from "@/components/apply/result-deck";
+import { isGamePlanResult } from "@/lib/score-engine";
+import { QUIZ_MAX_WIDTH_CLASS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -21,24 +23,25 @@ export default async function SharedResultPage({ params }: PageProps) {
     notFound();
   }
 
-  const result = data.scores as unknown as ScorecardResult;
+  const result = data.scores;
   const name = data.name as string;
 
   return (
     <>
       <ApplyHeader />
       <main className="flex flex-1 flex-col">
-        <div className="mx-auto w-full max-w-[720px] flex-1 px-5 py-10 tablet:px-[42px] tablet:py-14 desktop:max-w-[1080px] desktop:px-16 desktop:py-20 desktop-xl:px-[88px]">
-          <div className="flex flex-col">
-            <span className="text-eyebrow text-text-grey">Your Results</span>
-            <div className="mt-8 animate-score-fade">
-              <ScorecardDisplay result={result} userName={name} readonly />
-            </div>
-          </div>
+        <div className={cn("mx-auto w-full flex-1 px-5 py-8 tablet:px-8 tablet:py-10", QUIZ_MAX_WIDTH_CLASS)}>
+          {isGamePlanResult(result) ? (
+            <ResultDeck result={result} userName={name} readonly />
+          ) : (
+            <p className="text-text-section-desc">
+              This link is from an older quiz format and cannot be shown as a Game Plan.
+            </p>
+          )}
         </div>
       </main>
-      <footer className="border-t border-accent-line/30 bg-white py-6">
-        <div className="mx-auto max-w-[1440px] px-5 text-center text-sm text-text-grey tablet:px-[42px] desktop:px-16 desktop-xl:px-[88px]">
+      <footer className="border-t border-accent-line/40 py-6 dark:border-white/10">
+        <div className={cn("mx-auto px-5 text-center text-sm text-text-section-desc tablet:px-8", QUIZ_MAX_WIDTH_CLASS)}>
           &copy; {new Date().getFullYear()} AI Powered. All rights reserved.
         </div>
       </footer>

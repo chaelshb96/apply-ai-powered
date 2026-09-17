@@ -68,6 +68,9 @@
   --text-light: #c0c0c0;
   --accent-blue: #7a8fa6;
   --accent-line: #c8d0d8;
+  --page-from: #dce5ec;
+  --page-mid: #f4f6f8;
+  --page-to: #e7edf3;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -109,6 +112,9 @@
   --text-light: #50505a;
   --accent-blue: #8a99b0;
   --accent-line: #2d2d36;
+  --page-from: #121216;
+  --page-mid: #1a1a20;
+  --page-to: #101014;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.18 0 0);
@@ -144,10 +150,6 @@
 }
 
 /* Ensure body and html use vars that theme-aware classes depend on */
-html.dark body {
-  background: oklch(0.145 0 0);
-  color: #e8e8ec;
-}
 
 @utility container-padding-x {
   @apply px-5 tablet:px-[42px] desktop:px-16 desktop-xl:px-[88px];
@@ -202,13 +204,20 @@ html.dark body {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-    font-optical-sizing: auto;
-  }
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    color-scheme: light;
+    overflow-x: clip;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply text-foreground;
+    font-optical-sizing: auto;
+    background: linear-gradient(180deg, var(--page-from) 0%, var(--page-mid) 42%, var(--page-to) 100%);
+    background-color: var(--page-mid);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -253,20 +262,8 @@ html.dark body {
   animation: dot-bounce 1.4s ease-in-out infinite both;
 }
 
-@keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(24px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-24px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@utility animate-slide-in-right {
-  animation: slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@utility animate-slide-in-left {
-  animation: slide-in-left 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+@media (prefers-reduced-motion: reduce) {
+  .animate-score-fade {
+    animation: none !important;
+  }
 }

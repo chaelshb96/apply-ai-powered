@@ -1,215 +1,269 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { StepIndicator } from "./step-indicator";
-import { StepQuestion } from "./steps/step-question";
-import { Interstitial } from "./interstitial";
-import { DetailsForm } from "./details-form";
-import { SkillsLoading } from "./skills-loading";
-import { ScorecardDisplay } from "./scorecard/scorecard-display";
-import { Button } from "@/components/ui/button";
-import { INTERSTITIALS, QUESTIONS } from "@/lib/constants";
-import { calculateScorecard, type AnswerMap, type ScorecardResult } from "@/lib/score-engine";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BeatScreen } from "./beat-screen";
+import { CaptureForm } from "./capture-form";
+import { GAME_PLAN_LOADING_MS, GamePlanLoading } from "./game-plan-loading";
+import { QuestionScreen } from "./question-screen";
+import { ResultDeck } from "./result-deck";
+import { CardStack, type CardStackItem } from "@/components/ui/card-stack";
+import { BEATS, FLOW, QUESTIONS, TOTAL_QUESTION_SCREENS } from "@/lib/constants";
+import { calculateGamePlan, type AnswerMap, type AnswerValue, type GamePlanResult } from "@/lib/score-engine";
+import { cn } from "@/lib/utils";
 
-const TOTAL_QUESTIONS = QUESTIONS.length;
-const INTERSTITIAL_AFTER_STEPS = new Set(Object.keys(INTERSTITIALS).map(Number));
+type Phase = "flow" | "loading" | "result";
 
-type Phase = "questions" | "interstitial" | "details" | "loading" | "result";
-type Direction = "forward" | "back";
+const SELECT_HOLD_MS = 280;
+const STACK_DEPTH = 3;
+
+function noop() {}
+function noopSubmit(_name: string, _email: string) {}
+
+function asList(value: AnswerValue | undefined): string[] {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+function prefersReducedMotion() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function ScreenBody({
+  index,
+  answers,
+  onToggle,
+  onDone,
+  onBeatContinue,
+  onCaptureBack,
+  onSubmit,
+}: {
+  index: number;
+  answers: AnswerMap;
+  onToggle: (value: string) => void;
+  onDone: () => void;
+  onBeatContinue: () => void;
+  onCaptureBack: () => void;
+  onSubmit: (name: string, email: string) => void;
+}) {
+  const screen = FLOW[index];
+  const question = screen.questionId ? QUESTIONS[screen.questionId] : null;
+  const beat = screen.beatId ? BEATS[screen.beatId] : null;
+  const selected = question ? asList(answers[question.id]) : [];
+
+  if (screen.kind === "capture") {
+    return <CaptureForm onBack={onCaptureBack} onSubmit={onSubmit} />;
+  }
+  if (question) {
+    return (
+      <QuestionScreen
+        question={question}
+        selected={selected}
+        onToggle={onToggle}
+        onDone={question.type === "multi" ? onDone : undefined}
+      />
+    );
+  }
+  if (beat) {
+    return <BeatScreen beat={beat} onContinue={onBeatContinue} />;
+  }
+  return null;
+}
 
 export function ApplyFlow() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [screenIndex, setScreenIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswerMap>({});
-  const [phase, setPhase] = useState<Phase>("questions");
-  const [result, setResult] = useState<ScorecardResult | null>(null);
+  const [phase, setPhase] = useState<Phase>("flow");
+  const [result, setResult] = useState<GamePlanResult | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
-  const [interstitialAfterStep, setInterstitialAfterStep] = useState<number | null>(null);
-  const [direction, setDirection] = useState<Direction>("forward");
-  const [animationKey, setAnimationKey] = useState(0);
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const selectTimer = useRef<number | null>(null);
 
-  const currentValue = answers[currentStep] ?? "";
+  const screen = FLOW[screenIndex];
 
-  const handleValueChange = useCallback((value: string) => {
-    setAnswers((prev) => ({ ...prev, [currentStep]: value }));
-  }, [currentStep]);
-
-  const goBack = useCallback(() => {
-    if (phase === "interstitial") {
-      setPhase("questions");
-      return;
+  const questionProgress = useMemo(() => {
+    let seen = 0;
+    for (let i = 0; i <= screenIndex; i += 1) {
+      if (FLOW[i].kind === "question") seen += 1;
     }
-    setDirection("back");
-    setAnimationKey((k) => k + 1);
-    setCurrentStep((s) => Math.max(0, s - 1));
-  }, [phase]);
-
-  const handleInterstitialContinue = useCallback(() => {
-    if (interstitialAfterStep !== null) {
-      setDirection("forward");
-      setAnimationKey((k) => k + 1);
-      setCurrentStep(interstitialAfterStep);
-      setInterstitialAfterStep(null);
-      setPhase("questions");
+    if (screen.kind !== "question") {
+      seen = Math.max(seen, 1);
     }
-  }, [interstitialAfterStep]);
+    return Math.min(seen, TOTAL_QUESTION_SCREENS);
+  }, [screen.kind, screenIndex]);
+
+  const clearTimers = useCallback(() => {
+    if (selectTimer.current) window.clearTimeout(selectTimer.current);
+  }, []);
+
+  useEffect(() => () => clearTimers(), [clearTimers]);
+
+  const moveTo = useCallback((nextIndex: number, dir: "forward" | "back") => {
+    if (nextIndex < 0 || nextIndex > FLOW.length - 1) return;
+    setDirection(dir);
+    setScreenIndex(nextIndex);
+  }, []);
 
   const goNext = useCallback(() => {
-    const nextStepIndex = currentStep + 1;
+    moveTo(screenIndex + 1, "forward");
+  }, [moveTo, screenIndex]);
 
-    if (INTERSTITIAL_AFTER_STEPS.has(nextStepIndex)) {
-      setInterstitialAfterStep(nextStepIndex);
-      setPhase("interstitial");
-      return;
-    }
+  const goBack = useCallback(() => {
+    clearTimers();
+    moveTo(screenIndex - 1, "back");
+  }, [clearTimers, moveTo, screenIndex]);
 
-    setDirection("forward");
-    setAnimationKey((k) => k + 1);
+  const handleToggle = useCallback(
+    (value: string) => {
+      const question = screen.questionId ? QUESTIONS[screen.questionId] : null;
+      if (!question) return;
 
-    if (currentStep < TOTAL_QUESTIONS - 1) {
-      setCurrentStep(nextStepIndex);
-    } else {
-      setPhase("details");
-    }
-  }, [currentStep]);
+      setAnswers((prev) => {
+        const current = asList(prev[question.id]);
+        if (question.type === "single") {
+          return { ...prev, [question.id]: value };
+        }
+        let next = current.includes(value)
+          ? current.filter((item) => item !== value)
+          : [...current, value];
+        if (question.id === "q08") {
+          if (value === "none") next = ["none"];
+          else next = next.filter((item) => item !== "none");
+        }
+        return { ...prev, [question.id]: next };
+      });
+
+      if (question.type === "single") {
+        if (selectTimer.current) window.clearTimeout(selectTimer.current);
+        selectTimer.current = window.setTimeout(() => {
+          goNext();
+        }, prefersReducedMotion() ? 0 : SELECT_HOLD_MS);
+      }
+    },
+    [goNext, screen.questionId],
+  );
 
   const submitAndGetResult = useCallback(async (name: string, email: string) => {
     setUserName(name);
     setPhase("loading");
 
-    const scorecard = calculateScorecard(answers);
+    const plan = calculateGamePlan(answers);
+    const started = Date.now();
 
     try {
-      const response = await fetch("/api/apply", {
+      await fetch("/api/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, answers, scores: scorecard }),
+        body: JSON.stringify({ name, email, answers, scores: plan }),
       });
-
-      const data = await response.json();
-      if (response.ok && data.shareToken) {
-        setShareToken(data.shareToken);
-      }
     } catch {
-      // Save/share is best-effort; the result still shows.
+      // Email is best-effort. The plan still shows on this page.
     }
 
-    setResult(scorecard);
+    const minShow = prefersReducedMotion() ? 400 : GAME_PLAN_LOADING_MS;
+    const wait = Math.max(0, minShow - (Date.now() - started));
+    await new Promise((resolve) => window.setTimeout(resolve, wait));
+
+    setResult(plan);
     setPhase("result");
   }, [answers]);
 
   const handleReset = useCallback(() => {
-    setDirection("forward");
-    setAnimationKey(0);
-    setCurrentStep(0);
+    clearTimers();
+    setScreenIndex(0);
     setAnswers({});
-    setPhase("questions");
+    setPhase("flow");
     setResult(null);
     setShareToken(null);
     setUserName(null);
-    setInterstitialAfterStep(null);
-  }, []);
+    setDirection("forward");
+  }, [clearTimers]);
 
-  const canGoNext = currentValue !== "";
-  const showPrevious = currentStep > 0;
-
-  const slideClass =
-    direction === "forward"
-      ? "animate-slide-in-right"
-      : "animate-slide-in-left";
-
-  if (phase === "interstitial" && interstitialAfterStep !== null) {
-    const data = INTERSTITIALS[interstitialAfterStep];
-    if (!data) return null;
-
-    return (
-      <div className="flex flex-col">
-        <div key={`interstitial-${interstitialAfterStep}-${animationKey}`} className={`mt-4 ${slideClass}`}>
-          <Interstitial
-            quote={data.quote}
-            author={data.author}
-            fact={data.fact}
-            onContinue={handleInterstitialContinue}
+  const stackItems = useMemo(() => {
+    const items: CardStackItem[] = [];
+    for (let delta = 0; delta < STACK_DEPTH; delta += 1) {
+      const index = screenIndex + delta;
+      if (index >= FLOW.length) break;
+      const front = delta === 0;
+      items.push({
+        key: FLOW[index].id,
+        content: (
+          <ScreenBody
+            index={index}
+            answers={answers}
+            onToggle={front ? handleToggle : noop}
+            onDone={front ? goNext : noop}
+            onBeatContinue={front ? goNext : noop}
+            onCaptureBack={front ? goBack : noop}
+            onSubmit={front ? submitAndGetResult : noopSubmit}
           />
-        </div>
-        <div className="mt-10">
-          <button
-            onClick={goBack}
-            className="text-sm font-medium text-text-dark transition-colors hover:text-neutral-600"
-          >
-            ← Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "details") {
-    return (
-      <div className="animate-slide-in-right">
-        <DetailsForm onBack={() => setPhase("questions")} onSubmit={submitAndGetResult} />
-      </div>
-    );
-  }
+        ),
+      });
+    }
+    return items;
+  }, [answers, goBack, goNext, handleToggle, screenIndex, submitAndGetResult]);
 
   if (phase === "loading") {
+    const goalValue = typeof answers.q04 === "string" ? answers.q04 : "";
+    const hoursValue = typeof answers.q06 === "string" ? answers.q06 : "";
     return (
-      <div className="flex flex-col">
-        <SkillsLoading />
-      </div>
+      <CardStack cardKey="loading">
+        <GamePlanLoading
+          goal={QUESTIONS.q04.options.find((o) => o.value === goalValue)?.label ?? null}
+          hours={QUESTIONS.q06.options.find((o) => o.value === hoursValue)?.label ?? null}
+        />
+      </CardStack>
     );
   }
 
   if (phase === "result" && result) {
     return (
-      <div className="flex flex-col">
-        <div className="mt-8 animate-score-fade">
-          <ScorecardDisplay
-            result={result}
-            userName={userName ?? undefined}
-            shareToken={shareToken ?? undefined}
-            onReset={handleReset}
-          />
-        </div>
-      </div>
+      <ResultDeck
+        result={result}
+        userName={userName ?? undefined}
+        shareToken={shareToken ?? undefined}
+        onReset={handleReset}
+      />
     );
   }
 
   return (
     <div className="flex flex-col">
-      <StepIndicator currentStep={currentStep + 1} totalSteps={TOTAL_QUESTIONS} />
-
-      <div key={`q-${currentStep}-${animationKey}`} className={`mt-8 tablet:mt-10 ${slideClass}`}>
-        <StepQuestion
-          questionIndex={currentStep}
-          value={currentValue}
-          onValueChange={handleValueChange}
-        />
-      </div>
-
-      <div className="mt-10 flex items-center justify-between gap-3">
-        <div>
-          {showPrevious && (
-            <button
-              onClick={goBack}
-              className="flex items-center gap-1.5 text-sm font-medium text-text-dark transition-colors hover:text-neutral-600"
-            >
-              <ArrowLeft className="size-4" />
-              Previous
-            </button>
-          )}
+      {screen.kind !== "capture" && (
+        <div className="mb-5">
+          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-text-section-desc">
+            <span>Progress</span>
+            <span className="tabular-nums">
+              {questionProgress} / {TOTAL_QUESTION_SCREENS}
+            </span>
+          </div>
+          <div className="mt-2 h-1 overflow-hidden rounded-sm bg-neutral-200 dark:bg-neutral-800">
+            <div
+              className="h-full bg-neutral-950 transition-[width] duration-300 dark:bg-white"
+              style={{ width: `${(questionProgress / TOTAL_QUESTION_SCREENS) * 100}%` }}
+            />
+          </div>
         </div>
-        <Button
-          variant="primary"
-          size="default"
-          disabled={!canGoNext}
-          onClick={goNext}
-        >
-          {currentStep < TOTAL_QUESTIONS - 1 ? "Next" : "Continue"}
-          {currentStep < TOTAL_QUESTIONS - 1 && <ArrowRight className="size-4" />}
-        </Button>
-      </div>
+      )}
+
+      <CardStack direction={direction} items={stackItems} />
+
+      {screen.kind !== "capture" && (
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={goBack}
+            disabled={screenIndex === 0}
+            className={cn(
+              "min-h-11 text-sm font-medium",
+              screenIndex === 0 ? "text-text-section-desc" : "text-text-dark hover:text-neutral-600",
+            )}
+          >
+            Back
+          </button>
+        </div>
+      )}
     </div>
   );
 }
