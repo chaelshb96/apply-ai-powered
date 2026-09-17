@@ -8,7 +8,7 @@ const CARD_OFFSET = 18;
 const SCALE_FACTOR = 0.015;
 const DEPTH = 3;
 
-export const DECK_HEIGHT_CLASS = "h-[min(36rem,calc(100dvh-12rem))]";
+export const DECK_HEIGHT_CLASS = "h-[min(40rem,calc(100dvh-9.5rem))]";
 
 export type CardStackItem = {
   key: string | number;
@@ -60,7 +60,6 @@ export function CardStack({
   );
   const peekReserve = offset * (DEPTH - 1) + 6;
   const cardHeight = `calc(100% - ${peekReserve}px)`;
-  const flyOut = typeof window === "undefined" ? -1200 : -window.innerWidth;
 
   return (
     <div className={cn("relative w-full overflow-visible", DECK_HEIGHT_CLASS, className)}>
@@ -102,7 +101,7 @@ export function CardStack({
                 reduce
                   ? { opacity: 0 }
                   : direction === "forward"
-                    ? { x: flyOut, rotate: -8, zIndex: 40 }
+                    ? { x: "-100vw", rotate: -8, zIndex: 40 }
                     : { opacity: 0, scale: 0.96 }
               }
               transition={

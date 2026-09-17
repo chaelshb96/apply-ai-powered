@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { BeatScreen } from "./beat-screen";
 import { CaptureForm } from "./capture-form";
 import { GAME_PLAN_LOADING_MS, GamePlanLoading } from "./game-plan-loading";
@@ -231,14 +232,30 @@ export function ApplyFlow() {
   return (
     <div className="flex flex-col">
       {screen.kind !== "capture" && (
-        <div className="mb-5">
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.14em] text-text-section-desc">
-            <span>Progress</span>
-            <span className="tabular-nums">
+        <div className="mb-4">
+          <div className="grid min-h-11 grid-cols-[4.5rem_1fr_4.5rem] items-center">
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={screenIndex === 0}
+              aria-label="Previous question"
+              className={cn(
+                "grid size-11 place-items-center justify-self-start rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-800/40 dark:focus-visible:ring-white/40",
+                screenIndex === 0
+                  ? "text-text-section-desc"
+                  : "text-text-dark hover:text-neutral-600",
+              )}
+            >
+              <ArrowLeft className="size-5" aria-hidden />
+            </button>
+            <p className="text-center text-[11px] font-medium uppercase tracking-[0.14em] text-text-section-desc">
+              Progress
+            </p>
+            <p className="whitespace-nowrap text-right text-[11px] font-medium uppercase tracking-[0.14em] text-text-section-desc tabular-nums">
               {questionProgress} / {TOTAL_QUESTION_SCREENS}
-            </span>
+            </p>
           </div>
-          <div className="mt-2 h-1 overflow-hidden rounded-sm bg-neutral-200 dark:bg-neutral-800">
+          <div className="mt-1 h-1 overflow-hidden rounded-sm bg-neutral-200 dark:bg-neutral-800">
             <div
               className="h-full bg-neutral-950 transition-[width] duration-300 dark:bg-white"
               style={{ width: `${(questionProgress / TOTAL_QUESTION_SCREENS) * 100}%` }}
@@ -248,22 +265,6 @@ export function ApplyFlow() {
       )}
 
       <CardStack direction={direction} items={stackItems} />
-
-      {screen.kind !== "capture" && (
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={goBack}
-            disabled={screenIndex === 0}
-            className={cn(
-              "min-h-11 text-sm font-medium",
-              screenIndex === 0 ? "text-text-section-desc" : "text-text-dark hover:text-neutral-600",
-            )}
-          >
-            Back
-          </button>
-        </div>
-      )}
     </div>
   );
 }
