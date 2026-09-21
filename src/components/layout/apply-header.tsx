@@ -13,7 +13,10 @@ export function ApplyHeader() {
       <div className="flex h-14 items-center justify-between px-5">
         <Link
           href="https://aipowered.xyz"
-          className={cn(headerChrome, "flex h-9 items-center px-4 text-sm font-medium")}
+          className={cn(
+            headerChrome,
+            "flex size-9 items-center justify-center text-sm font-medium min-[400px]:w-auto min-[400px]:justify-start min-[400px]:px-4",
+          )}
           aria-label="Home"
         >
           <ArrowLeft className="size-4" />

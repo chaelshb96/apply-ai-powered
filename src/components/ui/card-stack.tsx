@@ -1,12 +1,26 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const CARD_OFFSET = 18;
 const SCALE_FACTOR = 0.015;
 const DEPTH = 3;
+const TILT = 1.4;
+const TILT_NARROW = 0.45;
+
+function useNarrow() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia("(max-width: 809px)");
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(max-width: 809px)").matches,
+    () => false,
+  );
+}
 
 export const DECK_HEIGHT_CLASS = "h-[min(40rem,calc(100dvh-9.5rem))]";
 
@@ -55,6 +69,7 @@ export function CardStack({
   onExitComplete?: () => void;
 }) {
   const reduce = useReducedMotion();
+  const tilt = useNarrow() ? TILT_NARROW : TILT;
   const stack = padItems(
     items?.length ? items : [{ key: cardKey ?? "card", content: children }],
   );
@@ -85,7 +100,7 @@ export function CardStack({
                     : {
                         y: (index + 1) * offset,
                         scale: 1 - (index + 1) * scaleFactor,
-                        rotate: (index + 1) * 1.4,
+                        rotate: (index + 1) * tilt,
                         opacity: 0.9,
                       }
               }
@@ -93,7 +108,7 @@ export function CardStack({
                 x: 0,
                 y: index * offset,
                 scale: 1 - index * scaleFactor,
-                rotate: index * 1.4,
+                rotate: index * tilt,
                 opacity: 1,
                 zIndex: 20 - index,
               }}

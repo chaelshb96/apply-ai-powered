@@ -68,8 +68,10 @@ export function gamePlanEmailSubject(result: GamePlanResult) {
   return `Your Game Plan — ${result.trackTitle}`;
 }
 
-export function gamePlanEmailText(name: string, result: GamePlanResult) {
-  const greeting = `${name}, ${result.who.charAt(0).toLowerCase()}${result.who.slice(1)}`;
+export function gamePlanEmailText(name: string | null, result: GamePlanResult) {
+  const greeting = name
+    ? `${name}, ${result.who.charAt(0).toLowerCase()}${result.who.slice(1)}`
+    : result.who;
   const vision = result.vision.length ? `\nSix months:\n${result.vision.map((item) => `- ${item}`).join("\n")}` : "";
   const facts = [
     result.goal ? `90 days: ${result.goal}` : null,
@@ -80,7 +82,7 @@ export function gamePlanEmailText(name: string, result: GamePlanResult) {
     .join("\n");
 
   return [
-    `Hi ${name}.`,
+    name ? `Hi ${name}.` : "Hi there.",
     "",
     "Your Game Plan",
     `${result.trackBadge}: ${result.trackTitle}`,
@@ -108,10 +110,11 @@ export function gamePlanEmailText(name: string, result: GamePlanResult) {
     .join("\n");
 }
 
-export function gamePlanEmailHtml(name: string, result: GamePlanResult) {
-  const safeName = escapeHtml(name);
+export function gamePlanEmailHtml(name: string | null, result: GamePlanResult) {
   const greeting = escapeHtml(
-    `${name}, ${result.who.charAt(0).toLowerCase()}${result.who.slice(1)}`,
+    name
+      ? `${name}, ${result.who.charAt(0).toLowerCase()}${result.who.slice(1)}`
+      : result.who,
   );
   const facts = [
     result.goal ? factRow("90 days", result.goal) : "",
@@ -144,7 +147,7 @@ export function gamePlanEmailHtml(name: string, result: GamePlanResult) {
               <td style="background:#1c2834;padding:40px 32px 36px;text-align:center;">
                 <div style="font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:#c8d0d8;">${escapeHtml(result.trackBadge)}</div>
                 <h1 style="margin:12px 0 0;font-size:28px;line-height:1.15;letter-spacing:-0.03em;color:#f4f6f8;font-weight:600;">${escapeHtml(result.trackTitle)}</h1>
-                <p style="margin:12px 0 0;font-size:16px;line-height:1.5;color:#d5dde4;">Hi ${safeName}. This is your track.</p>
+                <p style="margin:12px 0 0;font-size:16px;line-height:1.5;color:#d5dde4;">${name ? `Hi ${escapeHtml(name)}. ` : ""}This is your track.</p>
               </td>
             </tr>
             <tr>

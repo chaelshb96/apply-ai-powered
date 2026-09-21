@@ -20,29 +20,24 @@ export function GamePlanLoading({ goal, hours }: GamePlanLoadingProps) {
         line: goal
           ? `You said: ${goal}.`
           : "Reading what you actually want in 90 days.",
-        mark: "What you want",
       },
       {
         at: 22,
         line: hours
           ? `${hours} a week on work a machine could do.`
           : "Looking at where the hours go.",
-        mark: "Where the hours go",
       },
       {
         at: 46,
         line: "Weighing Starting Line, Operator, and Multiplier.",
-        mark: "Which track",
       },
       {
         at: 72,
         line: "Writing the plan for the track you landed on.",
-        mark: "The plan",
       },
       {
         at: 91,
         line: "Packing the cards.",
-        mark: "The cards",
       },
     ],
     [goal, hours],
@@ -76,12 +71,8 @@ export function GamePlanLoading({ goal, hours }: GamePlanLoadingProps) {
 
   return (
     <QuestionFace className="flex flex-col items-center justify-center text-center">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-section-desc">
-        Building your Game Plan
-      </p>
-
       <div
-        className="relative mt-8 grid size-[168px] place-items-center"
+        className="relative grid size-[168px] place-items-center"
         role="progressbar"
         aria-label="Building your Game Plan"
         aria-valuemin={0}
@@ -125,36 +116,6 @@ export function GamePlanLoading({ goal, hours }: GamePlanLoadingProps) {
       >
         {current.line}
       </p>
-
-      <ol className="mt-1 w-full max-w-[240px] space-y-2.5 text-left">
-        {stages.map((stage) => {
-          const active = current.mark === stage.mark;
-          const done = percent >= stage.at && !active;
-          return (
-            <li key={stage.mark} className="flex items-center gap-2.5">
-              <span
-                className={
-                  done || active
-                    ? "size-1.5 shrink-0 rounded-full bg-text-dark"
-                    : "size-1.5 shrink-0 rounded-full bg-neutral-300 dark:bg-neutral-600"
-                }
-                aria-hidden
-              />
-              <span
-                className={
-                  active
-                    ? "text-[13px] font-medium text-text-dark"
-                    : done
-                      ? "text-[13px] text-text-section-desc"
-                      : "text-[13px] text-text-section-desc/55"
-                }
-              >
-                {stage.mark}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
     </QuestionFace>
   );
 }

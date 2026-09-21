@@ -16,23 +16,18 @@ const FROM = (process.env.RESEND_FROM ?? "AI Powered <onboarding@resend.dev>").r
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, answers } = body as {
-      name?: unknown;
+    const { email, answers } = body as {
       email?: unknown;
       answers?: unknown;
     };
 
-    if (typeof name !== "string" || !name.trim()) {
-      return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
-    }
     if (typeof email !== "string" || !EMAIL_PATTERN.test(email.trim())) {
-      return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
+      return NextResponse.json({ error: "Email is required." }, { status: 400 });
     }
     if (!isAnswerMap(answers)) {
       return NextResponse.json({ error: "Answers are required." }, { status: 400 });
     }
 
-    const trimmedName = name.trim();
     const trimmedEmail = email.trim();
     const plan = calculateGamePlan(answers);
 
@@ -45,8 +40,8 @@ export async function POST(request: Request) {
       from: FROM,
       to: trimmedEmail,
       subject: gamePlanEmailSubject(plan),
-      html: gamePlanEmailHtml(trimmedName, plan),
-      text: gamePlanEmailText(trimmedName, plan),
+      html: gamePlanEmailHtml(null, plan),
+      text: gamePlanEmailText(null, plan),
     });
 
     if (error) {

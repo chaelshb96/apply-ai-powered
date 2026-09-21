@@ -5,10 +5,11 @@ import { ArrowLeft } from "lucide-react";
 import { BeatScreen } from "./beat-screen";
 import { CaptureForm } from "./capture-form";
 import { GAME_PLAN_LOADING_MS, GamePlanLoading } from "./game-plan-loading";
+import { IntroScreen } from "./intro-screen";
 import { QuestionScreen } from "./question-screen";
 import { ResultDeck } from "./result-deck";
-import { CardStack, type CardStackItem } from "@/components/ui/card-stack";
-import { BEATS, FLOW, QUESTIONS, TOTAL_QUESTION_SCREENS } from "@/lib/constants";
+import { CardStack, DECK_HEIGHT_CLASS, type CardStackItem } from "@/components/ui/card-stack";
+import { BEATS, FLOW, QUESTIONS, TOTAL_STEPS } from "@/lib/constants";
 import { calculateGamePlan, type AnswerMap, type AnswerValue, type GamePlanResult } from "@/lib/score-engine";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ const SELECT_HOLD_MS = 280;
 const STACK_DEPTH = 3;
 
 function noop() {}
-function noopSubmit(_name: string, _email: string) {}
+function noopSubmit(_email: string) {}
 
 function asList(value: AnswerValue | undefined): string[] {
   if (!value) return [];
@@ -45,13 +46,16 @@ function ScreenBody({
   onDone: () => void;
   onBeatContinue: () => void;
   onCaptureBack: () => void;
-  onSubmit: (name: string, email: string) => void;
+  onSubmit: (email: string) => void;
 }) {
   const screen = FLOW[index];
   const question = screen.questionId ? QUESTIONS[screen.questionId] : null;
   const beat = screen.beatId ? BEATS[screen.beatId] : null;
   const selected = question ? asList(answers[question.id]) : [];
 
+  if (screen.kind === "intro") {
+    return <IntroScreen onContinue={onBeatContinue} />;
+  }
   if (screen.kind === "capture") {
     return <CaptureForm onBack={onCaptureBack} onSubmit={onSubmit} />;
   }
@@ -77,22 +81,23 @@ export function ApplyFlow() {
   const [phase, setPhase] = useState<Phase>("flow");
   const [result, setResult] = useState<GamePlanResult | null>(null);
   const [shareToken, setShareToken] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const selectTimer = useRef<number | null>(null);
 
   const screen = FLOW[screenIndex];
 
   const questionProgress = useMemo(() => {
+    if (screen.kind === "capture") return TOTAL_STEPS;
     let seen = 0;
     for (let i = 0; i <= screenIndex; i += 1) {
-      if (FLOW[i].kind === "question") seen += 1;
+      const s = FLOW[i];
+      const q = s.questionId ? QUESTIONS[s.questionId] : null;
+      if (q && q.number !== null) seen += 1;
     }
-    if (screen.kind !== "question") {
-      seen = Math.max(seen, 1);
-    }
-    return Math.min(seen, TOTAL_QUESTION_SCREENS);
+    return Math.min(Math.max(seen, 1), TOTAL_STEPS);
   }, [screen.kind, screenIndex]);
+
+  const showProgress = screen.kind !== "capture" && screen.kind !== "intro" && screen.id !== "entry";
 
   const clearTimers = useCallback(() => {
     if (selectTimer.current) window.clearTimeout(selectTimer.current);
@@ -145,8 +150,7 @@ export function ApplyFlow() {
     [goNext, screen.questionId],
   );
 
-  const submitAndGetResult = useCallback(async (name: string, email: string) => {
-    setUserName(name);
+  const submitAndGetResult = useCallback(async (email: string) => {
     setPhase("loading");
 
     const plan = calculateGamePlan(answers);
@@ -156,7 +160,7 @@ export function ApplyFlow() {
       await fetch("/api/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, answers, scores: plan }),
+        body: JSON.stringify({ email, answers, scores: plan }),
       });
     } catch {
       // Email is best-effort. The plan still shows on this page.
@@ -177,7 +181,6 @@ export function ApplyFlow() {
     setPhase("flow");
     setResult(null);
     setShareToken(null);
-    setUserName(null);
     setDirection("forward");
   }, [clearTimers]);
 
@@ -209,12 +212,12 @@ export function ApplyFlow() {
     const goalValue = typeof answers.q04 === "string" ? answers.q04 : "";
     const hoursValue = typeof answers.q06 === "string" ? answers.q06 : "";
     return (
-      <CardStack cardKey="loading">
+      <div className={cn("w-full", DECK_HEIGHT_CLASS)}>
         <GamePlanLoading
           goal={QUESTIONS.q04.options.find((o) => o.value === goalValue)?.label ?? null}
           hours={QUESTIONS.q06.options.find((o) => o.value === hoursValue)?.label ?? null}
         />
-      </CardStack>
+      </div>
     );
   }
 
@@ -222,7 +225,6 @@ export function ApplyFlow() {
     return (
       <ResultDeck
         result={result}
-        userName={userName ?? undefined}
         shareToken={shareToken ?? undefined}
         onReset={handleReset}
       />
@@ -249,18 +251,20 @@ export function ApplyFlow() {
               <ArrowLeft className="size-5" aria-hidden />
             </button>
             <p className="text-center text-[11px] font-medium uppercase tracking-[0.14em] text-text-section-desc">
-              Progress
+              {showProgress ? "Progress" : ""}
             </p>
             <p className="whitespace-nowrap text-right text-[11px] font-medium uppercase tracking-[0.14em] text-text-section-desc tabular-nums">
-              {questionProgress} / {TOTAL_QUESTION_SCREENS}
+              {showProgress ? `${questionProgress} / ${TOTAL_STEPS}` : ""}
             </p>
           </div>
-          <div className="mt-1 h-1 overflow-hidden rounded-sm bg-neutral-200 dark:bg-neutral-800">
-            <div
-              className="h-full bg-neutral-950 transition-[width] duration-300 dark:bg-white"
-              style={{ width: `${(questionProgress / TOTAL_QUESTION_SCREENS) * 100}%` }}
-            />
-          </div>
+          {showProgress && (
+            <div className="mt-1 h-1 overflow-hidden rounded-sm bg-neutral-200 dark:bg-neutral-800">
+              <div
+                className="h-full bg-neutral-950 transition-[width] duration-300 dark:bg-white"
+                style={{ width: `${(questionProgress / TOTAL_STEPS) * 100}%` }}
+              />
+            </div>
+          )}
         </div>
       )}
 

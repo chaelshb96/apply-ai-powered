@@ -83,7 +83,7 @@ export function QuestionScreen({ question, selected, onToggle, onDone }: Questio
             disabled={selected.length === 0}
             className="min-h-11 text-sm font-medium text-text-dark disabled:text-text-section-desc"
           >
-            That&apos;s all
+            Continue
           </button>
         </div>
       )}

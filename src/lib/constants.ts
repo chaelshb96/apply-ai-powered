@@ -41,7 +41,7 @@ export interface Beat {
   body: string;
 }
 
-export type ScreenKind = "question" | "beat" | "capture";
+export type ScreenKind = "intro" | "question" | "beat" | "capture";
 
 export interface FlowScreen {
   id: string;
@@ -52,6 +52,13 @@ export interface FlowScreen {
 
 export const CONTACT_HREF = "https://aipowered.xyz/contact";
 export const QUIZ_MAX_WIDTH_CLASS = "max-w-[720px]";
+
+export const INTRO = {
+  eyebrow: "Before we start",
+  title: "Let's find out where you're at on your AI journey.",
+  body: "A few quick questions, then I'll build your plan.",
+  cta: "Let's go",
+};
 
 export const TRACKS: Record<
   TrackKey,
@@ -164,6 +171,7 @@ export const QUESTIONS: Record<string, Question> = {
       { label: "Launching the stuck thing", value: "launch", tracks: { a: 2, b: 1 } },
       { label: "Delivering without hiring", value: "deliver", tracks: { b: 1, c: 1 } },
       { label: "Chaos into a system", value: "system", tracks: { b: 1, c: 1 } },
+      { label: "Automating the repetitive stuff", value: "automate", tracks: { a: 1, c: 1 } },
     ],
   },
   q05: {
@@ -176,13 +184,14 @@ export const QUESTIONS: Record<string, Question> = {
       { label: "Making content", value: "content", tracks: { a: 1 } },
       { label: "Client delivery", value: "delivery", tracks: { b: 1 } },
       { label: "Sales and follow-up", value: "sales", tracks: { b: 1 } },
+      { label: "Repetitive daily tasks", value: "repetitive", tracks: { a: 1 } },
       { label: "Whatever's on fire", value: "fire", tracks: { a: 1 } },
     ],
   },
   q06: {
     id: "q06",
     number: 6,
-    prompt: "How many hours a week go on work a machine could do?",
+    prompt: "How many hours a week go on admin that could be automated?",
     type: "single",
     options: [
       { label: "Under 5", value: "under-5", tracks: { a: 1 } },
@@ -230,19 +239,21 @@ export const QUESTIONS: Record<string, Question> = {
     id: "q09",
     number: 9,
     prompt: "When you use AI, what usually happens?",
-    type: "single",
+    subtitle: "Pick every one that is true.",
+    type: "multi",
     options: [
       { label: "Usable straight away", value: "usable", tracks: { b: 2 } },
       { label: "70% there, I rewrite the rest", value: "rewrite", tracks: { a: 2 } },
       { label: "It's generic", value: "generic", tracks: { a: 2 } },
       { label: "Won't sound like me", value: "voice", tracks: { a: 2 } },
+      { label: "It's frustrating", value: "frustrating", tracks: { a: 2 } },
       { label: "I start, then give up", value: "give-up", tracks: { a: 2 } },
     ],
   },
   q10: {
     id: "q10",
     number: 10,
-    prompt: "Have you built anything with AI you still use?",
+    prompt: "Have you built anything with AI?",
     type: "single",
     options: [
       { label: "Use it daily", value: "daily", tracks: { b: 3 } },
@@ -325,12 +336,12 @@ export const QUESTIONS: Record<string, Question> = {
     subtitle: "Pick every one that is true.",
     type: "multi",
     options: [
-      { label: "Hours back weekly", value: "hours-back", tracks: { a: 1 } },
-      { label: "Ship in days not months", value: "ship-fast", tracks: { b: 1 } },
+      { label: "Getting my time back", value: "hours-back", tracks: { a: 1 } },
+      { label: "Shipping new things all the time", value: "ship-fast", tracks: { b: 1 } },
       { label: "A new offer selling", value: "new-offer", tracks: { b: 2 } },
       { label: "Fewer tools, less mess", value: "fewer-tools", tracks: { a: 1, b: 1 } },
-      { label: "Team using it without me", value: "team-without-me", tracks: { c: 2 } },
-      { label: "The person people ask", value: "the-person", tracks: { a: 1 } },
+      { label: "My team running and using it without me", value: "team-without-me", tracks: { c: 2 } },
+      { label: "The one people go to for AI now", value: "the-person", tracks: { a: 1 } },
     ],
   },
   q17: {
@@ -388,7 +399,7 @@ export const BEATS: Record<string, Beat> = {
     id: "proof",
     tag: "Proof",
     title: "I've taught [REAL DATA] people to build with Claude.",
-    body: "Founders, consultants, creatives and teams, all inside my programmes. Almost none of them technical when they walked in.",
+    body: "Founders, consultants, creatives and teams, all inside my programmes. Almost none of them were technical when they walked in.",
   },
   c: {
     id: "c",
@@ -399,6 +410,7 @@ export const BEATS: Record<string, Beat> = {
 };
 
 export const FLOW: FlowScreen[] = [
+  { id: "intro", kind: "intro" },
   { id: "entry", kind: "question", questionId: "entry" },
   { id: "q01", kind: "question", questionId: "q01" },
   { id: "q02", kind: "question", questionId: "q02" },
@@ -426,8 +438,12 @@ export const FLOW: FlowScreen[] = [
   { id: "capture", kind: "capture" },
 ];
 
-export const QUESTION_SCREENS = FLOW.filter((s) => s.kind === "question");
-export const TOTAL_QUESTION_SCREENS = QUESTION_SCREENS.length;
+// Numbered questions only — the opening fork (number: null) isn't part of the step count.
+export const NUMBERED_QUESTION_COUNT = Object.values(QUESTIONS).filter(
+  (q) => q.number !== null,
+).length;
+// +1 for the email capture screen, which gets its own final step per the spec.
+export const TOTAL_STEPS = NUMBERED_QUESTION_COUNT + 1;
 
 export const AGENCY = {
   website: {

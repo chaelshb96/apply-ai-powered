@@ -181,9 +181,6 @@ export function MotionCardStack({
           Next card
         </button>
       </div>
-      <p className="mt-1 text-center text-xs text-text-section-desc">
-        Swipe the card left or right to send it to the back.
-      </p>
     </div>
   );
 }

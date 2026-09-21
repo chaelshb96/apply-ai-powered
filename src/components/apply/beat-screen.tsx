@@ -44,6 +44,7 @@ export function BeatScreen({
     <button
       type="button"
       onClick={onContinue}
+      aria-label={beat.tag}
       className={cn(
         "block h-full w-full rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
         theme.ring,
@@ -57,13 +58,7 @@ export function BeatScreen({
         style={{ backgroundImage: theme.wash, color: theme.ink }}
       >
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em]">
-            {beat.tag}
-          </p>
-          <span aria-hidden className="mt-4 select-none text-6xl font-semibold leading-none">
-            “
-          </span>
-          <blockquote className="mt-2 w-full">
+          <blockquote className="w-full">
             <p className="text-[26px] font-semibold italic leading-snug tracking-[-0.03em] tablet:text-[32px]">
               {beat.title}
             </p>

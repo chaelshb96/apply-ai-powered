@@ -2,25 +2,24 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { TOTAL_STEPS } from "@/lib/constants";
 import { QuestionFace } from "./stacked-deck";
 
 interface CaptureFormProps {
   onBack: () => void;
-  onSubmit: (name: string, email: string) => void;
+  onSubmit: (email: string) => void;
   error?: string | null;
 }
 
 export function CaptureForm({ onBack, onSubmit, error }: CaptureFormProps) {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  const canSubmit =
-    name.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const canSubmit = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   return (
     <QuestionFace>
         <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-section-desc">
-          20 / 20
+          {TOTAL_STEPS} / {TOTAL_STEPS}
         </p>
         <h2 className="mt-3 text-[22px] font-semibold tracking-[-0.02em] text-text-dark tablet:text-[28px]">
           Your Game Plan is ready.
@@ -34,23 +33,9 @@ export function CaptureForm({ onBack, onSubmit, error }: CaptureFormProps) {
           onSubmit={(event) => {
             event.preventDefault();
             if (!canSubmit) return;
-            onSubmit(name.trim(), email.trim());
+            onSubmit(email.trim());
           }}
         >
-          <div>
-            <label htmlFor="game-plan-name" className="text-base font-medium text-text-dark">
-              Name
-            </label>
-            <input
-              id="game-plan-name"
-              type="text"
-              autoComplete="name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-2 min-h-14 w-full rounded-md border border-accent-line bg-white px-4 text-[17px] text-text-dark outline-none focus-visible:ring-2 focus-visible:ring-neutral-800/40 dark:border-white/12 dark:bg-neutral-950 dark:focus-visible:ring-white/40"
-            />
-          </div>
           <div>
             <label htmlFor="game-plan-email" className="text-base font-medium text-text-dark">
               Email
@@ -64,6 +49,9 @@ export function CaptureForm({ onBack, onSubmit, error }: CaptureFormProps) {
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2 min-h-14 w-full rounded-md border border-accent-line bg-white px-4 text-[17px] text-text-dark outline-none focus-visible:ring-2 focus-visible:ring-neutral-800/40 dark:border-white/12 dark:bg-neutral-950 dark:focus-visible:ring-white/40"
             />
+            <p className="mt-2 text-xs leading-relaxed text-text-section-desc">
+              We only use this to send your plan and what comes after it. Nothing else.
+            </p>
           </div>
 
           {error && (

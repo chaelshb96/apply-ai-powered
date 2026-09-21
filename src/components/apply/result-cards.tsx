@@ -29,7 +29,7 @@ function MedalBurst({ play }: { play: boolean }) {
         y: 28 + ((i * 23) % 96),
         rotate: (i * 41) % 160,
         color: CHIP_COLORS[i % CHIP_COLORS.length],
-        delay: i * 0.028,
+        delay: 0.2 + i * 0.028,
       })),
     [],
   );
@@ -52,28 +52,144 @@ function MedalBurst({ play }: { play: boolean }) {
   );
 }
 
-function TrophyMedal({ play }: { play: boolean }) {
-  const reduce = useReducedMotion();
+// One glyph per track: a start marker, a system that runs itself, a team all using it.
+function TrackGlyph({ track }: { track: TrackKey }) {
+  if (track === "b") {
+    return (
+      <>
+        <circle cx="24" cy="24" r="9.8" fill="none" stroke="currentColor" strokeWidth="4.4" />
+        <circle cx="24" cy="24" r="3.2" fill="currentColor" />
+        {Array.from({ length: 8 }, (_, i) => (
+          <rect
+            key={i}
+            x="21.4"
+            y="7.4"
+            width="5.2"
+            height="5.6"
+            rx="1.4"
+            fill="currentColor"
+            transform={`rotate(${i * 45} 24 24)`}
+          />
+        ))}
+      </>
+    );
+  }
+
+  if (track === "c") {
+    return (
+      <>
+        <path
+          d="M24 13.5 12.5 33.5M24 13.5 35.5 33.5M12.5 33.5h23"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        <circle cx="24" cy="11.5" r="5.6" fill="currentColor" />
+        <circle cx="11.5" cy="34.5" r="5.6" fill="currentColor" />
+        <circle cx="36.5" cy="34.5" r="5.6" fill="currentColor" />
+      </>
+    );
+  }
 
   return (
-    <motion.div
-      className="relative grid size-[5.5rem] place-items-center rounded-full text-[#1a242e]"
-      style={{
-        background: "radial-gradient(circle at 32% 28%, #c5d0da 0%, #7a8fa6 48%, #3d5164 100%)",
-        boxShadow:
-          "0 12px 28px rgba(12, 16, 22, 0.38), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -10px 18px rgba(12,16,22,0.28)",
-      }}
-      initial={reduce || !play ? false : { scale: 0.72, y: 10 }}
-      animate={{ scale: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 420, damping: 22 }}
-    >
-      <svg viewBox="0 0 32 32" className="size-9" aria-hidden>
-        <path
-          fill="currentColor"
-          d="M9 5h14v3.2c0 3.4-2.3 6.3-5.4 7.1V18h3.2v2.2H11.2V18H14.4v-2.7C11.3 14.5 9 11.6 9 8.2V5Zm-2.2 1.4H5.2v2.6c0 1.9 1.2 3.5 2.9 4.1-.2-.8-.3-1.6-.3-2.5V6.4Zm20 0h1.6v2.6c0 1.9-1.2 3.5-2.9 4.1.2-.8.3-1.6.3-2.5V6.4ZM12.2 22.4h7.6L18.2 26h-4.4l-1.6-3.6Z"
+    <>
+      <rect x="10.6" y="5.5" width="3.8" height="37" rx="1.7" fill="currentColor" />
+      <path
+        d="M16 8.2c6.4-3.4 12.8 3.4 19.2 0v14.4c-6.4 3.4-12.8-3.4-19.2 0V8.2Z"
+        fill="currentColor"
+      />
+    </>
+  );
+}
+
+function TrackMedal({ track, play }: { track: TrackKey; play: boolean }) {
+  const reduce = useReducedMotion();
+  const still = reduce || !play;
+
+  return (
+    <div className="relative grid place-items-center">
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute size-[15rem] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(122,143,166,0.38) 0%, rgba(122,143,166,0.12) 45%, rgba(122,143,166,0) 70%)",
+        }}
+        initial={still ? false : { opacity: 0, scale: 0.65 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      />
+
+      {!still && (
+        <motion.span
+          aria-hidden
+          className="pointer-events-none absolute size-[8rem] rounded-full border border-white/35 tablet:size-[9rem]"
+          initial={{ scale: 0.92, opacity: 0.6 }}
+          animate={{ scale: 1.85, opacity: 0 }}
+          transition={{ duration: 1.2, delay: 0.26, ease: [0.22, 1, 0.36, 1] }}
         />
-      </svg>
-    </motion.div>
+      )}
+
+      <motion.div
+        className="relative grid size-[8rem] place-items-center overflow-hidden rounded-full tablet:size-[9rem]"
+        style={{
+          background:
+            "radial-gradient(circle at 34% 26%, #eef3f7 0%, #c5d2dd 18%, #93a7b9 46%, #64809a 72%, #2e4256 100%)",
+          boxShadow: [
+            "0 26px 40px -16px rgba(6, 10, 15, 0.72)",
+            "inset 0 2px 1px rgba(255, 255, 255, 0.62)",
+            "inset 0 -20px 28px rgba(9, 13, 19, 0.46)",
+            "inset 0 -3px 3px rgba(197, 214, 230, 0.42)",
+          ].join(", "),
+        }}
+        initial={still ? false : { scale: 0.66, y: 16, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 360, damping: 18, mass: 0.9 }}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-[15%] top-[10%] h-[24%] w-[36%] -rotate-[20deg] rounded-[50%] blur-[7px]"
+          style={{
+            background:
+              "linear-gradient(155deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.38) 55%, rgba(255,255,255,0) 100%)",
+          }}
+        />
+
+        <motion.svg
+          viewBox="0 0 48 48"
+          fill="none"
+          className="relative size-[3.6rem] text-[#f7fafc] tablet:size-[4.1rem]"
+          style={{
+            filter:
+              "drop-shadow(0 2px 3px rgba(8, 13, 20, 0.55)) drop-shadow(0 0 1px rgba(8, 13, 20, 0.5))",
+          }}
+          aria-hidden
+          initial={still ? false : { scale: 0.86, opacity: 0, clipPath: "inset(100% 0% 0% 0%)" }}
+          animate={{ scale: 1, opacity: 1, clipPath: "inset(0% 0% 0% 0%)" }}
+          transition={{
+            clipPath: { duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] },
+            scale: { type: "spring", stiffness: 380, damping: 16, delay: 0.3 },
+            opacity: { duration: 0.18, delay: 0.3 },
+          }}
+        >
+          <TrackGlyph track={track} />
+        </motion.svg>
+
+        {!still && (
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-[-40%] left-0 w-[40%] -rotate-[18deg] blur-[10px]"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%)",
+            }}
+            initial={{ x: "-160%", opacity: 0 }}
+            animate={{ x: "300%", opacity: [0, 1, 1, 0] }}
+            transition={{ duration: 1.15, delay: 0.62, ease: "easeInOut" }}
+          />
+        )}
+      </motion.div>
+    </div>
   );
 }
 
@@ -94,14 +210,38 @@ export function ResultHeroCard({
     >
       <MedalBurst play={!reduce} />
       <div className="relative z-[1] flex flex-1 flex-col items-center justify-center">
-        <TrophyMedal play={!reduce} />
-        <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.16em] text-[#c8d0d8]">
+        <TrackMedal track={result.track} play={!reduce} />
+        <motion.p
+          className="mt-8 rounded-sm px-5 py-2.5 text-[14px] font-semibold uppercase leading-none tracking-[0.22em] text-[#eaf1f7]"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 100%)",
+            border: "1px solid rgba(255,255,255,0.3)",
+            boxShadow:
+              "inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -1px 0 rgba(0,0,0,0.28), 0 8px 16px -10px rgba(0,0,0,0.7)",
+          }}
+          initial={reduce ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.52, ease: [0.22, 1, 0.36, 1] }}
+        >
           {result.trackBadge}
-        </p>
-        <h3 className="mt-3 text-[28px] font-semibold tracking-[-0.03em] tablet:text-[36px]">
+        </motion.p>
+        <motion.h3
+          className="mt-4 text-[32px] font-semibold leading-[1.1] tracking-[-0.035em] tablet:text-[44px]"
+          initial={reduce ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.64, ease: [0.22, 1, 0.36, 1] }}
+        >
           {result.trackTitle}
-        </h3>
-        <p className="mt-3 max-w-[34ch] text-base leading-relaxed text-[#d5dde4]">{hello}</p>
+        </motion.h3>
+        <motion.p
+          className="mt-3 max-w-[34ch] text-base leading-relaxed text-[#d5dde4]"
+          initial={reduce ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.78, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {hello}
+        </motion.p>
       </div>
     </div>
   );
